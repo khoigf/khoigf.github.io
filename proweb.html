@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>W3.CSS Template</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: "Montserrat", sans-serif
+        }
+
+        .w3-row-padding img {
+            margin-bottom: 12px
+        }
+
+        /* Set the width of the sidebar to 120px */
+        .w3-sidebar {
+            width: 120px;
+            background: #222;
+        }
+
+        /* Add a left margin to the "page content" that matches the width of the sidebar (120px) */
+        #main {
+            margin-left: 120px
+        }
+
+        /* Remove margins from "page content" on small screens */
+        @media only screen and (max-width: 600px) {
+            #main {
+                margin-left: 0
+            }
+        }
+
+        /* CSS for centering message status */
+        /* CSS for centering message status */
+        .message-status {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            /* Make sure it's above other elements */
+        }
+
+        #messageStatus1 {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #2f9fe9;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .message-content {
+            text-align: center;
+        }
+
+        .message-content i {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body class="w3-black">
+
+    <!-- Icon Bar (Sidebar - hidden on small screens) -->
+    <nav class="w3-sidebar w3-bar-block w3-small w3-hide-small w3-center">
+        <!-- Avatar image in top left corner -->
+        <img src="myprofile1.jpg" style="width:100%">
+        <a href="#" class="w3-bar-item w3-button w3-padding-large w3-black">
+            <i class="fa fa-home w3-xxlarge"></i>
+            <p>HOME</p>
+        </a>
+        <a href="#about" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+            <i class="fa fa-user w3-xxlarge"></i>
+            <p>ABOUT</p>
+        </a>
+        <a href="#photos" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+            <i class="fa fa-eye w3-xxlarge"></i>
+            <p>PHOTOS</p>
+        </a>
+        <a href="#contact" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+            <i class="fa fa-envelope w3-xxlarge"></i>
+            <p>CONTACT</p>
+        </a>
+    </nav>
+
+    <!-- Navbar on small screens (Hidden on medium and large screens) -->
+    <div class="w3-top w3-hide-large w3-hide-medium" id="myNavbar">
+        <div class="w3-bar w3-black w3-opacity w3-hover-opacity-off w3-center w3-small">
+            <a href="#" class="w3-bar-item w3-button" style="width:25% !important">HOME</a>
+            <a href="#about" class="w3-bar-item w3-button" style="width:25% !important">ABOUT</a>
+            <a href="#photos" class="w3-bar-item w3-button" style="width:25% !important">PHOTOS</a>
+            <a href="#contact" class="w3-bar-item w3-button" style="width:25% !important">CONTACT</a>
+        </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="w3-padding-large" id="main">
+        <!-- Header/Home -->
+        <header class="w3-container w3-padding-32 w3-center w3-black" id="home">
+            <h1 class="w3-jumbo"><span class="w3-hide-small">I'm</span> Khoi.</h1>
+            <p>Software engineer and Web Designer.</p>
+            <img src="myprofile1.jpg" alt="boy" class="w3-image" width="450" height="650">
+        </header>
+
+        <!-- About Section -->
+        <div class="w3-content w3-justify w3-text-grey w3-padding-64" id="about">
+            <h2 class="w3-text-light-grey">About me</h2>
+            <hr style="width:200px" class="w3-opacity">
+            <p>Some text about me...
+            </p>
+            <h3 class="w3-padding-16 w3-text-light-grey">My Skills</h3>
+            <p class="w3-wide">Front end</p>
+            <div class="w3-white">
+                <div class="w3-dark-grey" style="height:28px;width:90%"></div>
+            </div>
+            <p class="w3-wide">Back end</p>
+            <div class="w3-white">
+                <div class="w3-dark-grey" style="height:28px;width:95%"></div>
+            </div>
+            <p class="w3-wide">Web Design</p>
+            <div class="w3-white">
+                <div class="w3-dark-grey" style="height:28px;width:85%"></div>
+            </div>
+            <p class="w3-wide">Photoshop</p>
+            <div class="w3-white">
+                <div class="w3-dark-grey" style="height:28px;width:80%"></div>
+            </div><br>
+
+            <div class="w3-row w3-center w3-padding-16 w3-section w3-light-grey">
+                <div class="w3-quarter w3-section">
+                    <span class="w3-xlarge">11+</span><br>
+                    Partners
+                </div>
+                <div class="w3-quarter w3-section">
+                    <span class="w3-xlarge">55+</span><br>
+                    Projects Done
+                </div>
+                <div class="w3-quarter w3-section">
+                    <span class="w3-xlarge">89+</span><br>
+                    Happy Clients
+                </div>
+                <div class="w3-quarter w3-section">
+                    <span class="w3-xlarge">150+</span><br>
+                    Meetings
+                </div>
+            </div>
+
+            <a href="CV TRAN HUY KHOI.pdf" class="w3-button w3-light-grey w3-padding-large w3-section" download>
+                <i class="fa fa-download"></i> Download Resume
+            </a>
+
+            <!-- Grid for pricing tables -->
+            <h3 class="w3-padding-16 w3-text-light-grey">The Game I Play</h3>
+            <div class="w3-row-padding" style="margin:0 -16px">
+                <div class="w3-half w3-margin-bottom">
+                    <ul class="w3-ul w3-white w3-center w3-opacity w3-hover-opacity-off">
+                        <li class="w3-dark-grey w3-xlarge w3-padding-32">Chess</li>
+                        <li class="w3-padding-16">1500 elo</li>
+                        <li class="w3-padding-16">Acc : khoihuyy</li>
+                        <li class="w3-padding-16">Web : chess.com</li>
+                        <li class="w3-padding-16">Add friend with me</li>
+                        <li class="w3-light-grey w3-padding-24">
+                            <a href="https://www.chess.com/member/khoihuyy"
+                                class="w3-button w3-white w3-padding-large w3-hover-black" target="_blank">Add</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="w3-half">
+                    <ul class="w3-ul w3-white w3-center w3-opacity w3-hover-opacity-off">
+                        <li class="w3-dark-grey w3-xlarge w3-padding-32">LQ Mobile</li>
+                        <li class="w3-padding-16">Rank : TA</li>
+                        <li class="w3-padding-16">Acc : Kihoshiki</li>
+                        <li class="w3-padding-16">Favotite Character : Murad</li>
+                        <li class="w3-padding-16">Play with me</li>
+                        <li class="w3-light-grey w3-padding-24">
+                            <a href="https://lienquan.garena.vn/"
+                                class="w3-button w3-white w3-padding-large w3-hover-black" target="_blank">Play</a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- End Grid/Pricing tables -->
+            </div>
+            <!-- End About Section -->
+        </div>
+
+        <!-- Portfolio Section -->
+        <div class="w3-padding-64 w3-content" id="photos">
+            <h2 class="w3-text-light-grey">My Background Photos</h2>
+            <hr style="width:200px" class="w3-opacity">
+
+            <!-- Grid for photos -->
+            <div class="w3-row-padding" style="margin:0 -16px">
+                <div class="w3-half">
+                    <img src="1.jpg" style="width:100%">
+                    <img src="2.jpg" style="width:100%">
+                    <img src="3.jpg" style="width:100%">
+                    <img src="21.jpg" style="width:100%">
+                </div>
+
+                <div class="w3-half">
+                    <img src="5.jpg" style="width:100%">
+                    <img src="6.jpg" style="width:100%">
+                    <img src="7.jpg" style="width:100%">
+                    <img src="8.jpg" style="width:100%">
+                </div>
+                <div class="w3-half">
+                    <img src="9.jpg" style="width:100%">
+                    <img src="10.jpg" style="width:100%">
+                    <img src="11.jpg" style="width:100%">
+                    <img src="12.jpg" style="width:100%">
+                </div>
+                <div class="w3-half">
+                    <img src="13.jpg" style="width:100%">
+                    <img src="14.jpg" style="width:100%">
+                    <img src="15.jpg" style="width:100%">
+                    <img src="16.jpg" style="width:100%">
+                </div>
+                <div class="w3-half">
+                    <img src="17.jpg" style="width:100%">
+                    <img src="18.jpg" style="width:100%">
+                    <img src="19.jpg" style="width:100%">
+                    <img src="20.jpg" style="width:100%">
+                </div>
+                <div class="w3-half">
+                    <img src="22.jpg" style="width:100%">
+                    <img src="23.jpg" style="width:100%">
+                    <img src="24.jpg" style="width:100%">
+                    <img src="25.jpg" style="width:100%">
+                    <img src="36.jpg" style="width:100%">
+                </div>
+                <div class="w3-half">
+                    <img src="26.jpg" style="width:100%">
+                    <img src="27.jpg" style="width:100%">
+                    <img src="28.jpg" style="width:100%">
+                    <img src="29.jpg" style="width:100%">
+                    <img src="30.jpg" style="width:100%">
+                </div>
+                <div class="w3-half">
+                    <img src="31.jpg" style="width:100%">
+                    <img src="32.jpg" style="width:100%">
+                    <img src="33.jpg" style="width:100%">
+                    <img src="34.jpg" style="width:100%">
+                    <img src="35.jpg" style="width:100%">
+                </div>
+                <!-- End photo grid -->
+            </div>
+            <!-- End Portfolio Section -->
+        </div>
+
+        <!-- Contact Section -->
+        <div class="w3-padding-64 w3-content w3-text-grey" id="contact">
+            <h2 class="w3-text-light-grey">Contact Me</h2>
+            <hr style="width:200px" class="w3-opacity">
+
+            <div class="w3-section">
+                <p><i class="fa fa-map-marker fa-fw w3-text-white w3-xxlarge w3-margin-right"></i> HaNoi, VN</p>
+                <p><i class="fa fa-phone fa-fw w3-text-white w3-xxlarge w3-margin-right"></i> Phone: +00 242424</p>
+                <p><i class="fa fa-envelope fa-fw w3-text-white w3-xxlarge w3-margin-right"> </i> Email:
+                    tranhuykhoity2003@gmail.com
+                </p>
+            </div><br>
+            <p>Let's get in touch. Send me a message:</p>
+
+            <form id="contactForm">
+                <p><input id="nameInput" class="w3-input w3-padding-16" type="text" placeholder="Name" required
+                        name="Name"></p>
+                <p><input id="emailInput" class="w3-input w3-padding-16" type="email" placeholder="Email" required
+                        name="Email"></p>
+                <p><input id="subjectInput" class="w3-input w3-padding-16" type="text" placeholder="Subject" required
+                        name="Subject"></p>
+                <p><input id="messageInput" class="w3-input w3-padding-16" type="text" placeholder="Message" required
+                        name="Message"></p>
+                <p>
+                    <button id="sendMessageButton" class="w3-button w3-light-grey w3-padding-large" type="button">
+                        <i class="fa fa-paper-plane"></i> SEND MESSAGE
+                    </button>
+                </p>
+            </form>
+
+            <div id="messageStatus" class="message-status">
+                <div class="message-content">
+                    <i class="fa fa-check-circle"></i>
+                    <p>Your message has been sent!</p>
+                </div>
+            </div>
+            <div id="messageStatus1" class="message-status">
+                <div class="message-content">
+                    <i class="fa fa-check-circle"></i>
+                </div>
+            </div>
+
+            <script>
+                document.getElementById("sendMessageButton").addEventListener("click", function () {
+                    // Lấy dữ liệu từ biểu mẫu
+                    var name = document.getElementById("nameInput").value;
+                    var email = document.getElementById("emailInput").value;
+                    var subject = document.getElementById("subjectInput").value;
+                    var message = document.getElementById("messageInput").value;
+
+                    // Kiểm tra xem các trường đã được điền đầy đủ hay chưa
+                    if (name.trim() === "" || email.trim() === "" || subject.trim() === "" || message.trim() === "") {
+                        var messageStatusElement = document.getElementById("messageStatus1");
+                        messageStatusElement.innerHTML = "Please fill in all fields.";
+                        messageStatusElement.style.display = "block";
+
+                        // Ẩn tin nhắn xác nhận sau 3 giây
+                        setTimeout(function () {
+                            messageStatusElement.style.display = "none";
+                        }, 3000);
+                    } else {
+
+                        // Hiển thị tin nhắn xác nhận gửi
+                        var messageStatusElement = document.getElementById("messageStatus");
+                        messageStatusElement.innerHTML = "Your message has been sent!";
+                        messageStatusElement.style.display = "block";
+
+                        // Xóa nội dung của biểu mẫu
+                        document.getElementById("contactForm").reset();
+
+                        // Ẩn tin nhắn xác nhận sau 3 giây
+                        setTimeout(function () {
+                            messageStatusElement.style.display = "none";
+                        }, 3000);
+                    }
+                });
+            </script>
+
+            <!-- End Contact Section -->
+        </div>
+
+        <!-- Footer -->
+        <footer class="w3-content w3-padding-64 w3-text-grey w3-xlarge">
+            <a href="https://www.facebook.com/khoi.huy.1232/" class="fa fa-facebook-official w3-hover-opacity"></a>
+            <a href="https://www.instagram.com/hkhoi2404/" class="fa fa-instagram w3-hover-opacity"></a>
+            <i class="fa fa-snapchat w3-hover-opacity"></i>
+            <i class="fa fa-pinterest-p w3-hover-opacity"></i>
+            <i class="fa fa-twitter w3-hover-opacity"></i>
+            <i class="fa fa-linkedin w3-hover-opacity"></i>
+            <p class="w3-medium">Code By Tran Huy Khoi</p>
+            <!-- End footer -->
+        </footer>
+
+        <!-- END PAGE CONTENT -->
+    </div>
+
+</body>
+
+</html>
