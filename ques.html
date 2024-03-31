@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicone.ico">
     <title>Crush Calculator</title>
     <style>
         body {
@@ -58,10 +59,10 @@
         <p>Tính tỷ lệ tỏ tình thành công của bạn!</p>
 
         <label for="your_name">Tên Bạn:</label><br>
-        <input type="text" id="your_name" name="your_name"><br>
+        <input type="text" id="your_name" name="your_name" required><br>
 
         <label for="crush_name">Tên của Crush:</label><br>
-        <input type="text" id="crush_name" name="crush_name"><br>
+        <input type="text" id="crush_name" name="crush_name" required><br>
 
         <button onclick="calculateCompatibility()">Tính</button>
 
@@ -72,8 +73,10 @@
         function calculateCompatibility() {
             var yourName = document.getElementById("your_name").value;
             var crushName = document.getElementById("crush_name").value;
-
-            var compatibility = calculatePercentage(yourName, crushName);
+            if (yourName == "" || crushName == "") {
+                var compatibility = 0;
+            } else
+                var compatibility = calculatePercentage(yourName, crushName);
 
             var resultText = "Tỷ lệ tỏ tình thành công với " + crushName + " là " + compatibility + "% ❤️!";
 
