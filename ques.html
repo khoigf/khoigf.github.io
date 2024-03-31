@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crush Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-image: url("anhnene.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+        }
+
+        #container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            margin: 5px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #compatibility_result {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <h1>Tỷ lệ tỏ tình thành công</h1>
+        <p>Tính tỷ lệ tỏ tình thành công của bạn!</p>
+
+        <label for="your_name">Tên Bạn:</label><br>
+        <input type="text" id="your_name" name="your_name"><br>
+
+        <label for="crush_name">Tên của Crush:</label><br>
+        <input type="text" id="crush_name" name="crush_name"><br>
+
+        <button onclick="calculateCompatibility()">Tính</button>
+
+        <p id="compatibility_result"></p>
+    </div>
+
+    <script>
+        function calculateCompatibility() {
+            var yourName = document.getElementById("your_name").value;
+            var crushName = document.getElementById("crush_name").value;
+
+            var compatibility = calculatePercentage(yourName, crushName);
+
+            var resultText = "Tỷ lệ tỏ tình thành công với " + crushName + " là " + compatibility + "% ❤️!";
+
+            document.getElementById("compatibility_result").innerText = resultText;
+        }
+
+        function calculatePercentage(yourName, crushName) {
+            // Some simple algorithm to generate a "random" compatibility percentage
+            var seed = 0;
+            for (var i = 0; i < yourName.length; i++) {
+                seed += yourName.charCodeAt(i);
+            }
+            for (var j = 0; j < crushName.length; j++) {
+                seed += crushName.charCodeAt(j);
+            }
+            return seed % 101; // Return a number between 0 and 100
+        }
+    </script>
+</body>
+
+</html>
