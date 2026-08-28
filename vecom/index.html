@@ -512,7 +512,7 @@
       <div>
         <p class="eyebrow">khoigf.github.io / vecom</p>
         <h1>Sơ đồ vé cơm</h1>
-        <p class="sub">Sửa tên hoặc chỗ ngồi sẽ tự lưu lên máy chủ. Mở lại trang hoặc máy khác vẫn thấy sơ đồ mới.</p>
+        <p class="sub">Sửa tên hoặc chỗ ngồi rồi bấm Lưu sơ đồ. Máy khác mở lại trang mới thấy bản vừa lưu.</p>
       </div>
       <div class="actions">
         <label class="date-field">
@@ -527,7 +527,7 @@
           Excel
         </label>
         <input id="file" type="file" accept=".xlsx,.xls">
-        <button class="ghost" id="btn-save-json" type="button">Lưu sơ đồ</button>
+        <button class="primary" id="btn-save-json" type="button">Lưu sơ đồ</button>
         <button class="ghost" id="btn-reset" type="button">Khôi phục gốc</button>
         <button class="export" id="btn-export" type="button" disabled>Xuất ảnh</button>
       </div>
@@ -555,10 +555,7 @@
           <input id="save-key" type="password" autocomplete="off" placeholder="Để trống nếu dùng server mới">
         </label>
         <div class="row">
-          <label class="check">
-            <input id="gh-auto" type="checkbox">
-            Tự lưu khi sửa tên
-          </label>
+          <input id="gh-auto" type="checkbox" hidden>
           <button class="ghost" id="btn-reload-remote" type="button">Lấy sơ đồ mới</button>
           <button class="ghost" id="btn-save-settings" type="button">Nhớ trên máy này</button>
         </div>
@@ -622,7 +619,6 @@
     const LAYOUT_STORAGE = "vecom-layout-v2";
     const GH_PATH = "vecom/seats.json";
     const GH_BRANCH = "main";
-    let githubSaveTimer = 0;
     let siteConfig = { saveUrl: "", needSaveKey: false };
     const SEATS_JSON = "seats.json";
     const BACKUP_JSON = "seats.backup.json";
@@ -759,7 +755,6 @@
 
     function persistLayout() {
       persistLocal();
-      scheduleGithubSave();
     }
 
     function showMsg(text, ok) {
@@ -816,10 +811,10 @@
       const hint = document.getElementById("save-hint");
       const bar = document.getElementById("save-bar");
       if (hasSeatsApi()) {
-        hint.textContent = "Sơ đồ dùng chung trên máy chủ. Sửa tên hoặc thêm ô sẽ tự lưu; máy khác mở lại trang là thấy.";
+        hint.textContent = "Bấm Lưu sơ đồ để ghi cho mọi máy. Sửa tên chưa bấm Lưu thì máy khác chưa thấy.";
         bar.hidden = true;
       } else {
-        hint.textContent = "Chưa có máy chủ lưu chung. Deploy vecom/bot lên Render (xem vecom/bot/HUONG-DAN.md) rồi mọi người sẽ tự lưu được.";
+        hint.textContent = "Chưa có máy chủ lưu chung. Deploy vecom/bot lên Render (xem vecom/bot/HUONG-DAN.md) rồi bấm Lưu sơ đồ.";
         bar.hidden = false;
       }
     }
@@ -829,10 +824,6 @@
         siteConfig = await fetchJson("config.json");
       } catch (_) {
         siteConfig = { saveUrl: "", needSaveKey: false };
-      }
-      if (hasSeatsApi()) {
-        const auto = document.getElementById("gh-auto");
-        auto.checked = true;
       }
       updateSaveHint();
     }
@@ -902,19 +893,6 @@
       if (!silent) showMsg("Đã lưu tên và chỗ ngồi lên GitHub (seats.json).", true);
     }
 
-    function scheduleGithubSave() {
-      if (BOT_MODE) return;
-      const { token, auto } = readGithubSettings();
-      const canApi = hasSeatsApi();
-      if (!canApi && !auto) return;
-      if (!canApi && !token) return;
-      if (canApi && siteConfig.needSaveKey === true && !readGithubSettings().saveKey) return;
-      clearTimeout(githubSaveTimer);
-      githubSaveTimer = setTimeout(() => {
-        pushSeatsToGithub(true).catch((err) => showMsg(err.message, false));
-      }, 1200);
-    }
-
     async function saveLayoutNow() {
       persistLocal();
       if (hasSeatsApi() || readGithubSettings().token) {
@@ -980,7 +958,7 @@
       remapTickets();
       renderFloor();
       summarize();
-      showMsg("Đã khôi phục tên và chỗ gốc từ seats.backup.json.", true);
+      showMsg("Đã khôi phục bản gốc trên màn hình. Bấm Lưu sơ đồ nếu muốn ghi cho mọi máy.", true);
     }
 
     function saveNames() {
@@ -1334,8 +1312,18 @@
       }
     });
 
-    document.getElementById("btn-save-json").addEventListener("click", () => {
-      saveLayoutNow().catch((err) => showMsg(err.message, false));
+    document.getElementById("btn-save-json").addEventListener("click", async () => {
+      const btn = document.getElementById("btn-save-json");
+      btn.disabled = true;
+      btn.textContent = "Đang lưu…";
+      try {
+        await saveLayoutNow();
+      } catch (err) {
+        showMsg(err.message, false);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Lưu sơ đồ";
+      }
     });
     document.getElementById("btn-save-settings").addEventListener("click", () => {
       writeGithubSettings();
