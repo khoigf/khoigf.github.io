@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
-import { bot, startTelegram, stopTelegram } from "./bot.js";
+import { bot, startTelegram, stopTelegram, invalidateVeCache } from "./bot.js";
 import { getSeats, isValidLayout, loadSeats, saveSeats, syncPublicConfig } from "./seats-store.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -46,6 +46,7 @@ app.post("/api/seats", async (req, res) => {
       return;
     }
     await saveSeats(req.body);
+    invalidateVeCache();
     res.json({ ok: true });
   } catch (err) {
     res.status(502).json({ error: err.message || "Lưu sơ đồ thất bại" });

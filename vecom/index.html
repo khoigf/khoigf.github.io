@@ -604,8 +604,12 @@
     </section>
   </div>
 
-  <script src="vendor/xlsx.full.min.js"></script>
-  <script src="vendor/html2canvas.min.js"></script>
+  <script>
+    if (new URLSearchParams(location.search).get("bot") !== "1") {
+      document.write('<script src="vendor/xlsx.full.min.js"><\/script>');
+      document.write('<script src="vendor/html2canvas.min.js"><\/script>');
+    }
+  </script>
   <script>
     const PAGE_PARAMS = new URLSearchParams(location.search);
     const BOT_MODE = PAGE_PARAMS.get("bot") === "1";

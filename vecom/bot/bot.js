@@ -16,7 +16,22 @@ const SCHEDULE_FILE = join(__dirname, "schedule.json");
 
 export const bot = TOKEN ? new Telegraf(TOKEN) : null;
 let cronTask = null;
-let browserPromise = null;
+let sharedBrowser = null;
+let browserIdleTimer = 0;
+const vePngCache = new Map();
+const veInflight = new Map();
+const VE_CACHE_MS = Number(process.env.VE_CACHE_MS) || 90_000;
+const BROWSER_IDLE_MS = 3 * 60_000;
+
+const CHROME_ARGS = [
+  "--no-sandbox",
+  "--disable-setuid-sandbox",
+  "--disable-dev-shm-usage",
+  "--disable-gpu",
+  "--disable-extensions",
+  "--mute-audio",
+  "--hide-scrollbars"
+];
 
 function vecomBase() {
   const explicit = process.env.VECOM_URL;
@@ -120,50 +135,120 @@ function applySchedule(saved) {
   );
 }
 
-async function getBrowser() {
-  if (!browserPromise) {
-    browserPromise = chromium.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-        "--single-process",
-        "--no-zygote"
-      ]
-    });
+function cachedPng(isoDate) {
+  const hit = vePngCache.get(isoDate);
+  if (!hit) return null;
+  if (Date.now() - hit.at > VE_CACHE_MS) {
+    vePngCache.delete(isoDate);
+    return null;
   }
-  return browserPromise;
+  return hit.buf;
 }
 
-async function captureMap(isoDate) {
+export function invalidateVeCache() {
+  vePngCache.clear();
+}
+
+async function closeBrowser() {
+  clearTimeout(browserIdleTimer);
+  const current = sharedBrowser;
+  sharedBrowser = null;
+  if (current) await current.close().catch(() => {});
+}
+
+function scheduleBrowserIdle() {
+  clearTimeout(browserIdleTimer);
+  browserIdleTimer = setTimeout(() => {
+    closeBrowser().catch(() => {});
+  }, BROWSER_IDLE_MS);
+}
+
+async function getBrowser() {
+  if (sharedBrowser?.isConnected()) return sharedBrowser;
+  await closeBrowser();
+  sharedBrowser = await chromium.launch({
+    headless: true,
+    args: CHROME_ARGS,
+    handleSIGINT: false,
+    handleSIGTERM: false,
+    timeout: 60000
+  });
+  sharedBrowser.on("disconnected", () => {
+    if (sharedBrowser) sharedBrowser = null;
+  });
+  return sharedBrowser;
+}
+
+async function captureMapOnce(isoDate) {
   const browser = await getBrowser();
-  const page = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
+  const page = await browser.newPage({
+    viewport: { width: 1100, height: 800 },
+    deviceScaleFactor: 1
+  });
   try {
     const url = `${vecomBase()}/?date=${encodeURIComponent(isoDate)}&bot=1`;
-    await page.goto(url, { waitUntil: "networkidle", timeout: 45000 });
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
     await page.waitForFunction(
       () => document.documentElement.dataset.veReady === "ok" || document.documentElement.dataset.veReady === "error",
-      { timeout: 30000 }
+      { timeout: 25000 }
     );
     const ready = await page.evaluate(() => document.documentElement.dataset.veReady);
     if (ready !== "ok") {
       const err = await page.evaluate(() => document.getElementById("msg")?.textContent || "");
       throw new Error(err || `Không có đơn ngày ${formatLabel(isoDate)}`);
     }
-    const el = page.locator("#export-root");
-    return await el.screenshot({ type: "png" });
+    return await page.locator("#export-root").screenshot({ type: "jpeg", quality: 82 });
   } finally {
-    await page.close();
+    await page.close().catch(() => {});
+    scheduleBrowserIdle();
   }
+}
+
+let captureChain = Promise.resolve();
+
+function enqueueCapture(task) {
+  const run = captureChain.then(task, task);
+  captureChain = run.then(() => {}, () => {});
+  return run;
+}
+
+async function captureMap(isoDate) {
+  const hit = cachedPng(isoDate);
+  if (hit) return hit;
+  if (veInflight.has(isoDate)) return veInflight.get(isoDate);
+
+  const job = enqueueCapture(async () => {
+    const again = cachedPng(isoDate);
+    if (again) return again;
+    let lastErr;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const buf = await captureMapOnce(isoDate);
+        vePngCache.set(isoDate, { buf, at: Date.now() });
+        return buf;
+      } catch (err) {
+        lastErr = err;
+        const msg = String(err.message || err);
+        const crashed = /has been closed|Target closed|Connection closed|browser has been closed/i.test(msg);
+        await closeBrowser().catch(() => {});
+        if (!crashed || attempt === 2) throw err;
+        console.error("Chromium crash, thử lại lần 2:", msg);
+      }
+    }
+    throw lastErr;
+  }).finally(() => {
+    veInflight.delete(isoDate);
+  });
+
+  veInflight.set(isoDate, job);
+  return job;
 }
 
 async function sendVe(chatId, isoDate, extra) {
   const buf = await captureMap(isoDate);
   await bot.telegram.sendPhoto(
     chatId,
-    { source: buf, filename: `ve-com-${isoDate}.png` },
+    { source: buf, filename: `ve-com-${isoDate}.jpg` },
     { caption: extra || `Vé cơm ${formatLabel(isoDate)}` }
   );
 }
@@ -248,12 +333,6 @@ export async function startTelegram(publicUrl) {
 }
 
 export async function stopTelegram() {
-  if (browserPromise) {
-    try {
-      const browser = await browserPromise;
-      await browser.close();
-    } catch { /* ignore */ }
-    browserPromise = null;
-  }
+  await closeBrowser();
   if (bot) await bot.stop();
 }
