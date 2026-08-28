@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "id": "l-mobile",
+      "side": "left",
+      "cols": 2,
+      "note": "(2 anh dev mobile trên T7)",
+      "cells": [
+        [
+          { "id": "l-mobile-0-0", "name": "Ngô Bá Đông" },
+          { "id": "l-mobile-0-1", "name": "Ngô Trung Sơn" }
+        ]
+      ]
+    },
+    {
+      "id": "l-a",
+      "side": "left",
+      "cols": 3,
+      "cells": [
+        [
+          { "id": "l-a-0-0", "name": "Đoàn Văn Phong" },
+          { "id": "l-a-0-1", "name": "Nguyễn Quang Hùng" },
+          { "id": "l-a-0-2", "name": "Nguyễn Ngọc Kiên" }
+        ],
+        [
+          { "id": "l-a-1-0", "name": "Lê Văn Thắng" },
+          { "id": "l-a-1-1", "name": "Phùng Đức Trung" },
+          { "id": "l-a-1-2", "name": "Đào Minh Tiến" }
+        ]
+      ]
+    },
+    {
+      "id": "l-b",
+      "side": "left",
+      "cols": 3,
+      "cells": [
+        [
+          { "id": "l-b-0-0", "name": "Trần Quốc Dũng" },
+          { "id": "l-b-0-1", "name": "Nguyễn Vũ Quang" },
+          { "id": "l-b-0-2", "name": "Phan Công Thành" }
+        ],
+        [
+          { "id": "l-b-1-0", "name": "Lê Thị Ngọc" },
+          { "id": "l-b-1-1", "name": "Lương Xuân Nam" },
+          { "id": "l-b-1-2", "name": "Phan Duy Toàn" }
+        ]
+      ]
+    },
+    {
+      "id": "l-c",
+      "side": "left",
+      "cols": 3,
+      "cells": [
+        [
+          { "id": "l-c-0-0", "name": "Đoàn Quang Hòa" },
+          { "id": "l-c-0-1", "name": "" },
+          { "id": "l-c-0-2", "name": "" }
+        ]
+      ]
+    },
+    {
+      "id": "l-bottom",
+      "side": "left",
+      "cols": 3,
+      "line": "bottom",
+      "cells": [
+        [
+          { "id": "l-bottom-0-0", "name": "Sơn hải" },
+          { "id": "l-bottom-0-1", "name": "Lê Gia Quang" },
+          { "id": "l-bottom-0-2", "name": "Vũ Việt Thành" }
+        ]
+      ]
+    },
+    {
+      "id": "r-top3",
+      "side": "right",
+      "cols": 3,
+      "cells": [
+        [
+          { "id": "r-top3-0-0", "name": "" },
+          { "id": "r-top3-0-1", "name": "" },
+          { "id": "r-top3-0-2", "name": "" }
+        ]
+      ]
+    },
+    {
+      "id": "r-top2",
+      "side": "right",
+      "cols": 1,
+      "offsetCols": 1,
+      "cells": [
+        [{ "id": "r-top2-0-0", "name": "" }],
+        [{ "id": "r-top2-1-0", "name": "" }]
+      ]
+    },
+    {
+      "id": "r-d",
+      "side": "right",
+      "cols": 3,
+      "cells": [
+        [
+          { "id": "r-d-0-0", "name": "Trần Quang Minh" },
+          { "id": "r-d-0-1", "name": "Mai Hoa" },
+          { "id": "r-d-0-2", "name": "Thu Hà" }
+        ],
+        [
+          { "id": "r-d-1-0", "name": "chu Tiến Anh" },
+          { "id": "r-d-1-1", "name": "" },
+          { "id": "r-d-1-2", "name": "" }
+        ]
+      ]
+    },
+    {
+      "id": "r-e",
+      "side": "right",
+      "cols": 3,
+      "cells": [
+        [
+          { "id": "r-e-0-0", "name": "Nguyễn Vĩnh Hiệp" },
+          { "id": "r-e-0-1", "name": "Phạm Duy Chiến" },
+          { "id": "r-e-0-2", "name": "Lê Anh Tuấn" }
+        ],
+        [
+          { "id": "r-e-1-0", "name": "Thịnh Xuân Đông" },
+          { "id": "r-e-1-1", "name": "Nguyễn Thị Hồng" },
+          { "id": "r-e-1-2", "name": "Đào Ngọc Huy" }
+        ]
+      ]
+    },
+    {
+      "id": "r-f",
+      "side": "right",
+      "cols": 3,
+      "cells": [
+        [
+          { "id": "r-f-0-0", "name": "" },
+          { "id": "r-f-0-1", "name": "Đoàn Thị Thu" },
+          { "id": "r-f-0-2", "name": "Trần Mạnh Quân" }
+        ],
+        [
+          { "id": "r-f-1-0", "name": "" },
+          { "id": "r-f-1-1", "name": "Bùi Đức Mạnh" },
+          { "id": "r-f-1-2", "name": "" }
+        ]
+      ]
+    },
+    {
+      "id": "r-g",
+      "side": "right",
+      "cols": 3,
+      "cells": [
+        [
+          { "id": "r-g-0-0", "name": "Doãn Minh Phụng" },
+          { "id": "r-g-0-1", "name": "Phạm Anh Minh" },
+          { "id": "r-g-0-2", "name": "Trần Huy Khôi" }
+        ],
+        [
+          { "id": "r-g-1-0", "name": "Vũ đức nhân" },
+          { "id": "r-g-1-1", "name": "Nguyễn Xuân Trường" },
+          { "id": "r-g-1-2", "name": "Bùi Quang Huy" }
+        ]
+      ]
+    }
+  ]
+}
