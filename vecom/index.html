@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vé cơm | Khoi O-O</title>
+  <link rel="icon" type="image/x-icon" href="../favicon123.ico">
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --ink: #1a1714;
+      --muted: #6b645c;
+      --line: #d9d2c6;
+      --paper: #fffcf7;
+      --accent: #0f766e;
+      --accent-ink: #fff;
+      --danger: #b42318;
+      --pink: #ff7af5;
+      --blue: #4f8fd8;
+      --gray: #c4c4c4;
+      --seat-border: #1a1a1a;
+      --shadow: 0 12px 40px rgba(26, 23, 20, 0.08);
+      --font: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+      --map-font: Calibri, "Segoe UI", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #fde68a33, transparent 50%),
+        radial-gradient(900px 400px at 100% 0%, #99f6e433, transparent 45%),
+        var(--bg);
+      color: var(--ink);
+      font-family: var(--font);
+    }
+
+    button, .file-btn, a { cursor: pointer; }
+
+    button:focus-visible,
+    .file-btn:focus-visible,
+    input:focus-visible {
+      outline: 3px solid #0f766e66;
+      outline-offset: 2px;
+    }
+
+    .wrap {
+      width: min(1280px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 64px;
+    }
+
+    header.app {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 40px);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .sub {
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 52ch;
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .file-btn, button {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 18px;
+      font: 600 14px/1 var(--font);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .file-btn, .primary {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .ghost {
+      background: var(--paper);
+      color: var(--ink);
+      box-shadow: inset 0 0 0 1px var(--line);
+    }
+
+    .export {
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    .file-btn:hover, button:hover { transform: translateY(-1px); }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #file { display: none; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: var(--paper);
+      border-radius: 18px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+      min-height: 92px;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 28px;
+      letter-spacing: -0.04em;
+    }
+
+    .stat.s25 strong { color: #a21caf; }
+    .stat.s35 strong { color: #1d4ed8; }
+
+    .file-meta {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .board {
+      background: var(--paper);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      overflow: auto;
+    }
+
+    #export-root {
+      background: #fff;
+      width: max-content;
+      min-width: 100%;
+      padding: 18px 24px 24px;
+    }
+
+    .map-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #111;
+    }
+
+    .map-head h2 {
+      margin: 0;
+      font-size: 20px;
+      font-family: var(--map-font);
+    }
+
+    .map-metrics {
+      display: flex;
+      gap: 18px;
+      font-family: var(--map-font);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .floor {
+      display: grid;
+      grid-template-columns: 2px 8px max-content 96px max-content;
+      row-gap: 26px;
+      align-items: start;
+      font-family: var(--map-font);
+    }
+
+    .wall {
+      grid-column: 1;
+      grid-row: 1 / -1;
+      background: #222;
+    }
+
+    .block-left { grid-column: 3; }
+    .block-right { grid-column: 5; }
+    .r1 { grid-row: 1; }
+    .r2 { grid-row: 2; }
+    .r3 { grid-row: 3; }
+    .r4 { grid-row: 4; }
+    .r5 { grid-row: 5; }
+    .block-left.r5 { padding-bottom: 6px; border-bottom: 2px solid #222; }
+
+    .seats {
+      display: grid;
+      gap: 0;
+    }
+
+    .seats.cols-2 { grid-template-columns: repeat(2, 168px); }
+    .seats.cols-3 { grid-template-columns: repeat(3, 168px); }
+
+    .note {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 8px;
+      margin-bottom: 2px;
+      background: var(--gray);
+      border: 1px solid var(--seat-border);
+      font-size: 11px;
+      color: #333;
+    }
+
+    .seat {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      height: 28px;
+      padding: 0 8px;
+      border: 1px solid var(--seat-border);
+      background: #fff;
+      font-size: 13px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .seat .name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .seat .name:focus {
+      outline: 1px dashed currentColor;
+      outline-offset: 1px;
+    }
+
+    .seat .qty {
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    .seat.t25 { background: var(--pink); color: #4a044e; }
+    .seat.t35 { background: var(--blue); color: #fff; }
+    .seat.none { background: var(--gray); color: #111; }
+    .seat.empty {
+      background: transparent;
+      border: none;
+      pointer-events: none;
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 18px;
+      font-family: var(--map-font);
+      font-size: 13px;
+    }
+
+    .legend i {
+      display: inline-block;
+      width: 18px;
+      height: 14px;
+      border: 1px solid #111;
+      vertical-align: -2px;
+      margin-right: 6px;
+    }
+
+    .table-wrap {
+      margin-top: 22px;
+      background: var(--paper);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .table-wrap h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th { color: var(--muted); font-size: 12px; letter-spacing: 0.04em; }
+
+    .tag {
+      display: inline-block;
+      min-width: 42px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .tag.t25 { background: #fce7f3; color: #a21caf; }
+    .tag.t35 { background: #dbeafe; color: #1d4ed8; }
+
+    .msg {
+      margin: 8px 0 0;
+      color: var(--danger);
+      font-size: 14px;
+      min-height: 1.2em;
+    }
+
+    .drop {
+      margin-top: 10px;
+      padding: 10px 14px;
+      border: 1px dashed #0f766e66;
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      background: #0f766e0d;
+    }
+
+    .drop.over { background: #0f766e22; }
+
+    @media (max-width: 900px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      header.app, .table-wrap, .file-meta, .msg, .drop { display: none; }
+      .board, #export-root { box-shadow: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="app">
+      <div>
+        <p class="eyebrow">khoigf.github.io / vecom</p>
+        <h1>Sơ đồ vé cơm</h1>
+        <p class="sub">Chỉ lấy người có trên sơ đồ. Bấm vào tên để sửa chỗ ngồi; tên thừa trong Excel sẽ bị bỏ qua.</p>
+      </div>
+      <div class="actions">
+        <label class="file-btn" for="file">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 16V4m0 0 4 4M12 4 8 8M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Tải Excel
+        </label>
+        <input id="file" type="file" accept=".xlsx,.xls">
+        <button class="ghost" id="btn-reset" type="button">Khôi phục tên gốc</button>
+        <button class="export" id="btn-export" type="button" disabled>Xuất ảnh</button>
+      </div>
+    </header>
+
+    <p class="file-meta" id="file-meta">Chưa có file. Dùng file dạng VeCom-YYYY_MM_DD.xlsx (cột Tên, Số lượng).</p>
+    <p class="msg" id="msg" role="status"></p>
+    <div class="drop" id="drop">Kéo thả file Excel vào đây, hoặc bấm Tải Excel.</div>
+
+    <section class="stats" aria-label="Tổng hợp">
+      <article class="stat"><span>Tổng vé</span><strong id="stat-total">0</strong></article>
+      <article class="stat s25"><span>25k</span><strong id="stat-25">0</strong></article>
+      <article class="stat s35"><span>35k</span><strong id="stat-35">0</strong></article>
+    </section>
+
+    <div class="board">
+      <div id="export-root">
+        <div class="map-head">
+          <h2 id="map-title">Vé cơm</h2>
+          <div class="map-metrics">
+            <span>Tổng: <b id="map-total">0</b></span>
+            <span>25k: <b id="map-25">0</b></span>
+            <span>35k: <b id="map-35">0</b></span>
+          </div>
+        </div>
+        <div class="floor" id="floor"></div>
+        <div class="legend">
+          <span><i style="background:var(--pink)"></i>25k</span>
+          <span><i style="background:var(--blue)"></i>35k</span>
+          <span><i style="background:var(--gray)"></i>Không đăng ký</span>
+        </div>
+      </div>
+    </div>
+
+    <section class="table-wrap">
+      <h2>Chi tiết mọi người</h2>
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Tên</th>
+              <th>Số vé</th>
+              <th>Loại</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script src="vendor/html2canvas.min.js"></script>
+  <script>
+    const STORAGE_KEY = "vecom-seat-names-v1";
+    const RAW_LAYOUT = [
+      { side: "left", row: 1, cols: 2, note: "(2 anh dev mobile trên T7)", cells: [
+        ["Ngô Bá Đông", "Ngô Trung Sơn"]
+      ]},
+      { side: "right", row: 1, cols: 3, cells: [
+        [null, null, null]
+      ]},
+      { side: "left", row: 2, cols: 3, cells: [
+        ["Đoàn Văn Phong", "Nguyễn Quang Hùng", "Nguyễn Ngọc Kiên"],
+        ["Lê Văn Thắng", "Phùng Đức Trung", "Đào Minh Tiến"]
+      ]},
+      { side: "right", row: 2, cols: 3, cells: [
+        ["Trần Quang Minh", "Mai Hoa", "Thu Hà"],
+        ["chu Tiến Anh", null, null]
+      ]},
+      { side: "left", row: 3, cols: 3, cells: [
+        ["Trần Quốc Dũng", "Nguyễn Vũ Quang", "Phan Công Thành"],
+        ["Lê Thị Ngọc", "Lương Xuân Nam", "Phan Duy Toàn"]
+      ]},
+      { side: "right", row: 3, cols: 3, cells: [
+        ["Nguyễn Vĩnh Hiệp", "Phạm Duy Chiến", "Lê Anh Tuấn"],
+        ["Thịnh Xuân Đông", "Nguyễn Thị Hồng", "Đào Ngọc Huy"]
+      ]},
+      { side: "left", row: 4, cols: 3, cells: [
+        ["Đoàn Quang Hòa", null, null]
+      ]},
+      { side: "right", row: 4, cols: 3, cells: [
+        [null, "Đoàn Thị Thu", "Trần Mạnh Quân"],
+        [null, "Bùi Đức Mạnh", null]
+      ]},
+      { side: "left", row: 5, cols: 3, cells: [
+        ["Sơn hải", "Lê Gia Quang", "Vũ Việt Thành"]
+      ]},
+      { side: "right", row: 5, cols: 3, cells: [
+        ["Doãn Minh Phụng", "Phạm Anh Minh", "Trần Huy Khôi"],
+        ["Vũ đức nhân", "Nguyễn Xuân Trường", "Bùi Quang Huy"]
+      ]}
+    ];
+
+    const LAYOUT = RAW_LAYOUT.map((group, gi) => ({
+      ...group,
+      cells: group.cells.map((row, ri) => row.map((name, ci) => {
+        if (!name) return null;
+        return { id: `s-${gi}-${ri}-${ci}`, defaultName: name, name };
+      }))
+    }));
+
+    let allTickets = [];
+    let tickets = [];
+    let skippedCount = 0;
+    let fileDateLabel = "";
+    let fileBaseName = "ve-com";
+    let fileLabel = "";
+
+    function normalize(s) {
+      return String(s || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d").replace(/Đ/g, "d")
+        .toLowerCase()
+        .replace(/[^a-z0-9 ]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function parseTicket(amount, qty) {
+      qty = Number(qty);
+      if (!Number.isFinite(qty) || qty <= 0) qty = 1;
+      amount = Number(amount) || 0;
+      let unit;
+      if (amount === 25000 || amount === 35000) unit = amount;
+      else if (qty > 0 && (amount / qty === 25000 || amount / qty === 35000)) unit = amount / qty;
+      else unit = qty > 0 ? Math.round(amount / qty) : amount;
+      const kind = unit >= 30000 ? 35 : 25;
+      const total = (amount === 25000 || amount === 35000) ? unit * qty : (amount || unit * qty);
+      return { qty, unit, kind, total };
+    }
+
+    function eachSeat(fn) {
+      LAYOUT.forEach((g) => g.cells.flat().forEach((c) => { if (c) fn(c); }));
+    }
+
+    function seatCells() {
+      const cells = [];
+      eachSeat((c) => cells.push(c));
+      return cells;
+    }
+
+    function loadSavedNames() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        eachSeat((c) => {
+          if (Object.prototype.hasOwnProperty.call(saved, c.id)) c.name = String(saved[c.id] || "");
+        });
+      } catch (_) { /* ignore */ }
+    }
+
+    function saveNames() {
+      const map = {};
+      eachSeat((c) => { map[c.id] = c.name; });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+    }
+
+    function resetNames() {
+      eachSeat((c) => { c.name = c.defaultName; });
+      localStorage.removeItem(STORAGE_KEY);
+      remapTickets();
+      renderFloor();
+      summarize();
+    }
+
+    function scoreNames(a, b) {
+      const ta = new Set(normalize(a).split(" ").filter(Boolean));
+      const tb = new Set(normalize(b).split(" ").filter(Boolean));
+      if (!ta.size || !tb.size) return 0;
+      let inter = 0;
+      ta.forEach((t) => { if (tb.has(t)) inter += 1; });
+      return inter / new Set([...ta, ...tb]).size;
+    }
+
+    function matchSeat(excelName) {
+      const cells = seatCells().filter(hasName);
+      const key = normalize(excelName);
+      const byCurrent = cells.find((c) => normalize(c.name) === key);
+      if (byCurrent) return byCurrent;
+      const byDefault = cells.find((c) => c.name === c.defaultName && normalize(c.defaultName) === key);
+      if (byDefault) return byDefault;
+      let best = null, bestScore = 0;
+      cells.forEach((c) => {
+        let sc = scoreNames(excelName, c.name);
+        if (c.name === c.defaultName) sc = Math.max(sc, scoreNames(excelName, c.defaultName));
+        if (sc > bestScore) { bestScore = sc; best = c; }
+      });
+      return bestScore >= 0.8 ? best : null;
+    }
+
+    function findHeaderIndex(headers, aliases) {
+      const n = headers.map((h) => normalize(h));
+      return n.findIndex((h) => aliases.some((a) => h === a || h.includes(a)));
+    }
+
+    function parseWorkbook(wb, fileName) {
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+      if (!rows.length) throw new Error("File trống.");
+      let headerRow = 0;
+      for (let i = 0; i < Math.min(rows.length, 10); i++) {
+        const joined = normalize((rows[i] || []).join(" "));
+        if (joined.includes("ten")) { headerRow = i; break; }
+      }
+      const headers = rows[headerRow].map((h) => String(h || ""));
+      const iName = findHeaderIndex(headers, ["ten", "ho ten", "ho va ten", "name"]);
+      const iQty = findHeaderIndex(headers, ["so luong", "sl", "qty"]);
+      const iAmt = findHeaderIndex(headers, ["so tien", "thanh tien", "amount", "gia"]);
+      if (iName < 0) throw new Error("Không thấy cột Tên.");
+      const out = [];
+      for (let r = headerRow + 1; r < rows.length; r++) {
+        const row = rows[r] || [];
+        const name = String(row[iName] || "").trim();
+        if (!name) continue;
+        const parsed = parseTicket(row[iAmt], iQty >= 0 ? row[iQty] : 1);
+        out.push({
+          name,
+          seatId: null,
+          ...parsed
+        });
+      }
+      const m = String(fileName || "").match(/(\d{4})[_-](\d{2})[_-](\d{2})/);
+      fileDateLabel = m ? `${m[3]}/${m[2]}/${m[1]}` : new Date().toLocaleDateString("vi-VN");
+      fileBaseName = (fileName || "ve-com").replace(/\.(xlsx|xls)$/i, "");
+      return out;
+    }
+
+    function remapTickets() {
+      skippedCount = 0;
+      tickets = [];
+      allTickets.forEach((t) => {
+        const seat = matchSeat(t.name);
+        if (!seat) {
+          skippedCount += 1;
+          return;
+        }
+        tickets.push({ ...t, seatId: seat.id, seatName: seat.name });
+      });
+    }
+
+    function ticketBySeat() {
+      const map = new Map();
+      tickets.forEach((t) => {
+        if (!t.seatId) return;
+        const prev = map.get(t.seatId);
+        if (prev) {
+          prev.qty += t.qty;
+          prev.total += t.total;
+          if (t.kind === 35) prev.kind = 35;
+        } else map.set(t.seatId, { ...t });
+      });
+      return map;
+    }
+
+    function hasName(cell) {
+      return !!(cell && String(cell.name || "").trim());
+    }
+
+    function commitSeatName(cell, value) {
+      cell.name = String(value || "").replace(/\s+/g, " ").trim();
+      saveNames();
+      remapTickets();
+      renderFloor();
+      summarize();
+    }
+
+    function renderSeat(cell, bySeat) {
+      const el = document.createElement("div");
+      if (!hasName(cell)) {
+        el.className = "seat empty";
+        return el;
+      }
+      const t = bySeat.get(cell.id);
+      el.className = "seat " + (t ? (t.kind === 35 ? "t35" : "t25") : "none");
+      const nm = document.createElement("input");
+      nm.className = "name";
+      nm.type = "text";
+      nm.value = cell.name;
+      nm.setAttribute("aria-label", "Tên chỗ ngồi");
+      nm.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          nm.blur();
+        }
+        e.stopPropagation();
+      });
+      nm.addEventListener("click", (e) => e.stopPropagation());
+      nm.addEventListener("blur", () => {
+        if (nm.value.replace(/\s+/g, " ").trim() === cell.name) return;
+        commitSeatName(cell, nm.value);
+      });
+      el.appendChild(nm);
+      if (t && t.qty > 1) {
+        const q = document.createElement("span");
+        q.className = "qty";
+        q.textContent = t.qty;
+        el.appendChild(q);
+      }
+      el.title = t ? `${cell.name} · ${t.qty} vé · ${t.kind}k` : `${cell.name} · không đăng ký`;
+      return el;
+    }
+
+    function renderFloor() {
+      const floor = document.getElementById("floor");
+      floor.innerHTML = "";
+      const wall = document.createElement("div");
+      wall.className = "wall";
+      wall.setAttribute("aria-hidden", "true");
+      floor.appendChild(wall);
+      const bySeat = ticketBySeat();
+      LAYOUT.forEach((group) => {
+        const cells = group.cells.flat();
+        if (!group.note && !cells.some(hasName)) return;
+        const wrap = document.createElement("div");
+        wrap.className = `block-${group.side} r${group.row}`;
+        if (group.note) {
+          const note = document.createElement("div");
+          note.className = "note";
+          note.textContent = group.note;
+          wrap.appendChild(note);
+        }
+        const grid = document.createElement("div");
+        grid.className = `seats cols-${group.cols}`;
+        cells.forEach((cell) => grid.appendChild(renderSeat(cell, bySeat)));
+        wrap.appendChild(grid);
+        floor.appendChild(wrap);
+      });
+    }
+
+    function updateFileMeta() {
+      const el = document.getElementById("file-meta");
+      if (!fileLabel) {
+        el.textContent = "Chưa có file. Dùng file dạng VeCom-YYYY_MM_DD.xlsx (cột Tên, Số lượng).";
+        return;
+      }
+      const qty = tickets.reduce((s, t) => s + t.qty, 0);
+      el.textContent = skippedCount
+        ? `${fileLabel} · ${tickets.length} người trên sơ đồ · ${qty} vé · bỏ qua ${skippedCount} tên không có trên sơ đồ`
+        : `${fileLabel} · ${tickets.length} người trên sơ đồ · ${qty} vé`;
+    }
+
+    function summarize() {
+      const totalQty = tickets.reduce((s, t) => s + t.qty, 0);
+      const q25 = tickets.filter((t) => t.kind === 25).reduce((s, t) => s + t.qty, 0);
+      const q35 = tickets.filter((t) => t.kind === 35).reduce((s, t) => s + t.qty, 0);
+      document.getElementById("stat-total").textContent = totalQty;
+      document.getElementById("stat-25").textContent = q25;
+      document.getElementById("stat-35").textContent = q35;
+      document.getElementById("map-total").textContent = totalQty;
+      document.getElementById("map-25").textContent = q25;
+      document.getElementById("map-35").textContent = q35;
+      document.getElementById("map-title").textContent = fileDateLabel ? `Vé cơm ${fileDateLabel}` : "Vé cơm";
+      updateFileMeta();
+
+      const tbody = document.getElementById("tbody");
+      tbody.innerHTML = "";
+      tickets
+        .slice()
+        .sort((a, b) => a.seatName.localeCompare(b.seatName, "vi"))
+        .forEach((t) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${t.seatName}</td>
+            <td>${t.qty}</td>
+            <td><span class="tag t${t.kind}">${t.kind}k</span></td>`;
+          tbody.appendChild(tr);
+        });
+
+      document.getElementById("btn-export").disabled = false;
+    }
+
+    async function handleFile(file) {
+      const msg = document.getElementById("msg");
+      msg.textContent = "";
+      try {
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf, { type: "array" });
+        allTickets = parseWorkbook(wb, file.name);
+        if (!allTickets.length) throw new Error("Không đọc được dòng dữ liệu nào.");
+        fileLabel = file.name;
+        remapTickets();
+        renderFloor();
+        summarize();
+      } catch (err) {
+        msg.textContent = err.message || "Không đọc được file.";
+      }
+    }
+
+    function renderEmpty() {
+      allTickets = [];
+      tickets = [];
+      skippedCount = 0;
+      fileLabel = "";
+      fileDateLabel = "";
+      renderFloor();
+      summarize();
+    }
+
+    document.getElementById("file").addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (f) handleFile(f);
+    });
+
+    const drop = document.getElementById("drop");
+    ["dragenter", "dragover"].forEach((ev) => {
+      drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); });
+    });
+    ["dragleave", "drop"].forEach((ev) => {
+      drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); });
+    });
+    drop.addEventListener("drop", (e) => {
+      const f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) handleFile(f);
+    });
+
+    document.getElementById("btn-export").addEventListener("click", async () => {
+      const btn = document.getElementById("btn-export");
+      const root = document.getElementById("export-root");
+      const board = root.parentElement;
+      const prevOverflow = board.style.overflow;
+      if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+      btn.disabled = true;
+      btn.textContent = "Đang xuất...";
+      root.querySelectorAll("input.name").forEach((input) => {
+        const span = document.createElement("span");
+        span.className = "name";
+        span.textContent = input.value;
+        input.replaceWith(span);
+      });
+      try {
+        board.style.overflow = "visible";
+        const canvas = await html2canvas(root, {
+          backgroundColor: "#ffffff",
+          scale: 2,
+          useCORS: true,
+          windowWidth: Math.max(document.documentElement.scrollWidth, root.scrollWidth + 64),
+          windowHeight: Math.max(document.documentElement.scrollHeight, root.scrollHeight + 64)
+        });
+        const a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        a.download = `${fileBaseName}.png`;
+        a.click();
+      } catch (err) {
+        document.getElementById("msg").textContent = "Xuất ảnh thất bại. Thử in trang (Ctrl/Cmd P).";
+      } finally {
+        board.style.overflow = prevOverflow;
+        renderFloor();
+        btn.disabled = false;
+        btn.textContent = "Xuất ảnh";
+      }
+    });
+
+    document.getElementById("btn-reset").addEventListener("click", resetNames);
+
+    loadSavedNames();
+    renderEmpty();
+  </script>
+</body>
+</html>
