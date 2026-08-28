@@ -124,22 +124,36 @@ export function getSeats() {
   return cache;
 }
 
-export async function loadSeats() {
-  if (cache) return cache;
-  try {
-    const remote = await githubGet(seatsPath());
-    if (remote && !remote.missing) {
-      const parsed = JSON.parse(remote.text);
-      if (isValidLayout(parsed)) {
-        cache = parsed;
-        writeLocal(parsed);
-        return cache;
+async function fetchStaticSeats() {
+  if (token()) {
+    try {
+      const remote = await githubGet(seatsPath());
+      if (remote && !remote.missing) {
+        const parsed = JSON.parse(remote.text);
+        if (isValidLayout(parsed)) return parsed;
       }
+    } catch (err) {
+      console.error("Không tải seats từ GitHub API:", err.message);
+    }
+  }
+  const rawUrl = `https://raw.githubusercontent.com/${repo()}/${branch()}/${seatsPath()}`;
+  try {
+    const res = await fetch(`${rawUrl}?t=${Date.now()}`, { cache: "no-store" });
+    if (res.ok) {
+      const parsed = await res.json();
+      if (isValidLayout(parsed)) return parsed;
     }
   } catch (err) {
-    console.error("Không tải seats từ GitHub:", err.message);
+    console.error("Không tải seats.json public:", err.message);
   }
-  cache = readLocalFile(LOCAL_FILE) || readLocalFile(SEED_FILE) || { version: 1, groups: [] };
+  return readLocalFile(LOCAL_FILE) || readLocalFile(SEED_FILE) || null;
+}
+
+export async function loadSeats(force = false) {
+  if (cache && !force) return cache;
+  const parsed = await fetchStaticSeats();
+  cache = parsed || { version: 1, groups: [] };
+  if (parsed) writeLocal(parsed);
   return cache;
 }
 

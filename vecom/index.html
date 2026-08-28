@@ -512,7 +512,7 @@
       <div>
         <p class="eyebrow">khoigf.github.io / vecom</p>
         <h1>Sơ đồ vé cơm</h1>
-        <p class="sub">Sửa tên hoặc chỗ ngồi rồi bấm Lưu sơ đồ. Máy khác mở lại trang mới thấy bản vừa lưu.</p>
+        <p class="sub">Sơ đồ lấy từ file tĩnh seats.json. Sửa tên rồi bấm Lưu sơ đồ để ghi lên GitHub; máy khác F5 là thấy (sau khi Pages cập nhật).</p>
       </div>
       <div class="actions">
         <label class="date-field">
@@ -815,7 +815,7 @@
       const hint = document.getElementById("save-hint");
       const bar = document.getElementById("save-bar");
       if (hasSeatsApi()) {
-        hint.textContent = "Bấm Lưu sơ đồ để ghi cho mọi máy. Sửa tên chưa bấm Lưu thì máy khác chưa thấy.";
+        hint.textContent = "Sơ đồ trên trang lấy từ seats.json (GitHub). Bấm Lưu sơ đồ để ghi file đó cho mọi máy và cho bot.";
         bar.hidden = true;
       } else {
         hint.textContent = "Chưa có máy chủ lưu chung. Deploy vecom/bot lên Render (xem vecom/bot/HUONG-DAN.md) rồi bấm Lưu sơ đồ.";
@@ -849,7 +849,7 @@
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Lưu thất bại (${res.status})`);
-      if (!silent) showMsg("Đã lưu sơ đồ. Máy khác mở lại trang sẽ thấy.", true);
+      if (!silent) showMsg("Đã lưu vào seats.json trên GitHub. Máy khác F5 trang (đợi Pages ~1 phút) sẽ thấy.", true);
     }
 
     function toBase64(str) {
@@ -918,20 +918,7 @@
       return res.json();
     }
 
-    async function fetchRemoteSeats() {
-      const url = seatsEndpoint();
-      if (!url) return null;
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data && data.groups ? data : null;
-    }
-
     async function loadWorkingLayout() {
-      try {
-        const remote = await fetchRemoteSeats();
-        if (remote) return hydrateLayout(remote);
-      } catch (_) { /* ignore */ }
       try {
         return hydrateLayout(await fetchJson(SEATS_JSON));
       } catch (_) { /* ignore */ }
@@ -945,14 +932,13 @@
     }
 
     async function reloadRemoteLayout() {
-      const remote = await fetchRemoteSeats();
-      const data = remote || await fetchJson(SEATS_JSON);
+      const data = await fetchJson(SEATS_JSON);
       LAYOUT = hydrateLayout(data);
       persistLocal();
       remapTickets();
       renderFloor();
       summarize();
-      showMsg("Đã lấy sơ đồ mới nhất.", true);
+      showMsg("Đã tải sơ đồ từ seats.json.", true);
     }
 
     async function restoreBackup() {

@@ -1,4 +1,4 @@
-import { getSeats } from "./seats-store.js";
+import { getSeats, loadSeats } from "./seats-store.js";
 
 const ORDERS_API = "https://freelunch.quandaso.xyz/api/orders";
 const DEPARTMENT_ID = 2;
@@ -38,7 +38,7 @@ function formatDateLabel(iso) {
 }
 
 export async function fetchCaptureData(isoDate) {
-  const seats = getSeats();
+  const seats = (await loadSeats(true)) || getSeats();
   if (!seats) {
     return { ok: false, date: isoDate, seats: { version: 1, groups: [] }, tickets: [], error: "Chưa tải được sơ đồ" };
   }
