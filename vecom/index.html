@@ -206,35 +206,58 @@
     }
 
     .floor {
-      display: grid;
-      grid-template-columns: 2px 8px max-content 96px max-content;
-      row-gap: 26px;
-      align-items: start;
+      display: flex;
+      align-items: flex-start;
+      gap: 96px;
       font-family: var(--map-font);
     }
 
-    .wall {
-      grid-column: 1;
-      grid-row: 1 / -1;
-      background: #222;
+    .wing {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
     }
 
-    .block-left { grid-column: 3; }
-    .block-right { grid-column: 5; }
-    .r1 { grid-row: 1; }
-    .r2 { grid-row: 2; }
-    .r3 { grid-row: 3; }
-    .r4 { grid-row: 4; }
-    .r5 { grid-row: 5; }
-    .block-left.r5 { padding-bottom: 6px; border-bottom: 2px solid #222; }
+    .wing-left {
+      border-left: 2px solid #222;
+      padding-left: 8px;
+    }
+
+    .offset-1 { margin-left: 168px; }
+    .line-bottom { padding-bottom: 6px; border-bottom: 2px solid #222; }
 
     .seats {
       display: grid;
       gap: 0;
     }
 
+    .seats.cols-1 { grid-template-columns: 168px; }
     .seats.cols-2 { grid-template-columns: repeat(2, 168px); }
     .seats.cols-3 { grid-template-columns: repeat(3, 168px); }
+
+    button.add-cell {
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      margin-top: 4px;
+      border: 1px dashed #8a8278;
+      background: #fff;
+      color: #6b645c;
+      border-radius: 4px;
+      padding: 0;
+      font-size: 16px;
+      line-height: 1;
+      box-shadow: none;
+      transform: none;
+    }
+
+    button.add-cell:hover {
+      transform: none;
+      background: #f4f1ea;
+      color: var(--ink);
+    }
+
+    #export-root.capturing .add-cell { display: none; }
 
     .note {
       display: inline-flex;
@@ -260,6 +283,7 @@
       font-size: 13px;
       line-height: 1;
       white-space: nowrap;
+      cursor: text;
     }
 
     .seat .name {
@@ -274,8 +298,7 @@
       color: inherit;
       font: inherit;
       outline: none;
-      appearance: none;
-      -webkit-appearance: none;
+      cursor: text;
     }
 
     .seat .name:focus {
@@ -292,9 +315,7 @@
     .seat.t35 { background: var(--blue); color: #fff; }
     .seat.none { background: var(--gray); color: #111; }
     .seat.empty {
-      background: transparent;
-      border: none;
-      pointer-events: none;
+      background: #fff;
     }
 
     .legend {
@@ -383,7 +404,7 @@
 
     @media print {
       body { background: #fff; }
-      header.app, .table-wrap, .file-meta, .msg, .drop { display: none; }
+      header.app, .table-wrap, .file-meta, .msg, .drop, .add-cell { display: none; }
       .board, #export-root { box-shadow: none; padding: 0; }
     }
   </style>
@@ -394,7 +415,7 @@
       <div>
         <p class="eyebrow">khoigf.github.io / vecom</p>
         <h1>Sơ đồ vé cơm</h1>
-        <p class="sub">Chỉ lấy người có trên sơ đồ. Bấm vào tên để sửa chỗ ngồi; tên thừa trong Excel sẽ bị bỏ qua.</p>
+        <p class="sub">Sơ đồ đủ ô như ảnh. Bấm ô trống để thêm tên, hoặc bấm + ô để gắn thêm chỗ ngồi.</p>
       </div>
       <div class="actions">
         <label class="file-btn" for="file">
@@ -459,52 +480,62 @@
   <script src="vendor/html2canvas.min.js"></script>
   <script>
     const STORAGE_KEY = "vecom-seat-names-v1";
+    const STORAGE_EXTRAS = "vecom-extra-cells-v1";
     const RAW_LAYOUT = [
-      { side: "left", row: 1, cols: 2, note: "(2 anh dev mobile trên T7)", cells: [
+      { id: "l-mobile", side: "left", cols: 2, note: "(2 anh dev mobile trên T7)", cells: [
         ["Ngô Bá Đông", "Ngô Trung Sơn"]
       ]},
-      { side: "right", row: 1, cols: 3, cells: [
-        [null, null, null]
-      ]},
-      { side: "left", row: 2, cols: 3, cells: [
+      { id: "l-a", side: "left", cols: 3, cells: [
         ["Đoàn Văn Phong", "Nguyễn Quang Hùng", "Nguyễn Ngọc Kiên"],
         ["Lê Văn Thắng", "Phùng Đức Trung", "Đào Minh Tiến"]
       ]},
-      { side: "right", row: 2, cols: 3, cells: [
-        ["Trần Quang Minh", "Mai Hoa", "Thu Hà"],
-        ["chu Tiến Anh", null, null]
-      ]},
-      { side: "left", row: 3, cols: 3, cells: [
+      { id: "l-b", side: "left", cols: 3, cells: [
         ["Trần Quốc Dũng", "Nguyễn Vũ Quang", "Phan Công Thành"],
         ["Lê Thị Ngọc", "Lương Xuân Nam", "Phan Duy Toàn"]
       ]},
-      { side: "right", row: 3, cols: 3, cells: [
+      { id: "l-c", side: "left", cols: 3, cells: [
+        ["Đoàn Quang Hòa", null, null]
+      ]},
+      { id: "l-bottom", side: "left", cols: 3, line: "bottom", cells: [
+        ["Sơn hải", "Lê Gia Quang", "Vũ Việt Thành"]
+      ]},
+      { id: "r-top3", side: "right", cols: 3, cells: [
+        [null, null, null]
+      ]},
+      { id: "r-top2", side: "right", cols: 1, offsetCols: 1, cells: [
+        [null],
+        [null]
+      ]},
+      { id: "r-d", side: "right", cols: 3, cells: [
+        ["Trần Quang Minh", "Mai Hoa", "Thu Hà"],
+        ["chu Tiến Anh", null, null]
+      ]},
+      { id: "r-e", side: "right", cols: 3, cells: [
         ["Nguyễn Vĩnh Hiệp", "Phạm Duy Chiến", "Lê Anh Tuấn"],
         ["Thịnh Xuân Đông", "Nguyễn Thị Hồng", "Đào Ngọc Huy"]
       ]},
-      { side: "left", row: 4, cols: 3, cells: [
-        ["Đoàn Quang Hòa", null, null]
-      ]},
-      { side: "right", row: 4, cols: 3, cells: [
+      { id: "r-f", side: "right", cols: 3, cells: [
         [null, "Đoàn Thị Thu", "Trần Mạnh Quân"],
         [null, "Bùi Đức Mạnh", null]
       ]},
-      { side: "left", row: 5, cols: 3, cells: [
-        ["Sơn hải", "Lê Gia Quang", "Vũ Việt Thành"]
-      ]},
-      { side: "right", row: 5, cols: 3, cells: [
+      { id: "r-g", side: "right", cols: 3, cells: [
         ["Doãn Minh Phụng", "Phạm Anh Minh", "Trần Huy Khôi"],
         ["Vũ đức nhân", "Nguyễn Xuân Trường", "Bùi Quang Huy"]
       ]}
     ];
 
-    const LAYOUT = RAW_LAYOUT.map((group, gi) => ({
-      ...group,
-      cells: group.cells.map((row, ri) => row.map((name, ci) => {
-        if (!name) return null;
-        return { id: `s-${gi}-${ri}-${ci}`, defaultName: name, name };
-      }))
-    }));
+    function buildLayout() {
+      return RAW_LAYOUT.map((group) => ({
+        ...group,
+        cells: group.cells.map((row, ri) => row.map((name, ci) => ({
+          id: `${group.id}-${ri}-${ci}`,
+          defaultName: name || "",
+          name: name || ""
+        })))
+      }));
+    }
+
+    let LAYOUT = buildLayout();
 
     let allTickets = [];
     let tickets = [];
@@ -562,12 +593,44 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
     }
 
+    function saveExtras() {
+      const extras = {};
+      LAYOUT.forEach((g) => {
+        extras[g.id] = g.cells.flat().filter((c) => c.extra).map((c) => ({ id: c.id, name: c.name }));
+      });
+      localStorage.setItem(STORAGE_EXTRAS, JSON.stringify(extras));
+    }
+
+    function loadExtras() {
+      try {
+        const extras = JSON.parse(localStorage.getItem(STORAGE_EXTRAS) || "{}");
+        LAYOUT.forEach((g) => {
+          (extras[g.id] || []).forEach((x) => {
+            const cell = { id: x.id, defaultName: "", name: x.name || "", extra: true };
+            const last = g.cells[g.cells.length - 1];
+            if (!last || last.length >= g.cols) g.cells.push([cell]);
+            else last.push(cell);
+          });
+        });
+      } catch (_) { /* ignore */ }
+    }
+
     function resetNames() {
-      eachSeat((c) => { c.name = c.defaultName; });
+      LAYOUT = buildLayout();
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_EXTRAS);
       remapTickets();
       renderFloor();
       summarize();
+    }
+
+    function addCellToGroup(group) {
+      const cell = { id: `x-${group.id}-${Date.now()}`, defaultName: "", name: "", extra: true };
+      const last = group.cells[group.cells.length - 1];
+      if (!last || last.length >= group.cols) group.cells.push([cell]);
+      else last.push(cell);
+      saveExtras();
+      renderFloor();
     }
 
     function scoreNames(a, b) {
@@ -666,6 +729,7 @@
     function commitSeatName(cell, value) {
       cell.name = String(value || "").replace(/\s+/g, " ").trim();
       saveNames();
+      saveExtras();
       remapTickets();
       renderFloor();
       summarize();
@@ -673,17 +737,15 @@
 
     function renderSeat(cell, bySeat) {
       const el = document.createElement("div");
-      if (!hasName(cell)) {
-        el.className = "seat empty";
-        return el;
-      }
-      const t = bySeat.get(cell.id);
-      el.className = "seat " + (t ? (t.kind === 35 ? "t35" : "t25") : "none");
+      const named = hasName(cell);
+      const t = named ? bySeat.get(cell.id) : null;
+      el.className = "seat " + (named ? (t ? (t.kind === 35 ? "t35" : "t25") : "none") : "empty");
       const nm = document.createElement("input");
       nm.className = "name";
       nm.type = "text";
       nm.value = cell.name;
-      nm.setAttribute("aria-label", "Tên chỗ ngồi");
+      nm.placeholder = "";
+      nm.setAttribute("aria-label", named ? "Tên chỗ ngồi" : "Thêm người vào ô này");
       nm.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -703,23 +765,25 @@
         q.textContent = t.qty;
         el.appendChild(q);
       }
-      el.title = t ? `${cell.name} · ${t.qty} vé · ${t.kind}k` : `${cell.name} · không đăng ký`;
+      el.title = named
+        ? (t ? `${cell.name} · ${t.qty} vé · ${t.kind}k` : `${cell.name} · không đăng ký`)
+        : "Bấm để thêm người";
       return el;
     }
 
     function renderFloor() {
       const floor = document.getElementById("floor");
       floor.innerHTML = "";
-      const wall = document.createElement("div");
-      wall.className = "wall";
-      wall.setAttribute("aria-hidden", "true");
-      floor.appendChild(wall);
       const bySeat = ticketBySeat();
+      const left = document.createElement("div");
+      left.className = "wing wing-left";
+      const right = document.createElement("div");
+      right.className = "wing wing-right";
       LAYOUT.forEach((group) => {
-        const cells = group.cells.flat();
-        if (!group.note && !cells.some(hasName)) return;
         const wrap = document.createElement("div");
-        wrap.className = `block-${group.side} r${group.row}`;
+        wrap.className = "block";
+        if (group.offsetCols) wrap.classList.add(`offset-${group.offsetCols}`);
+        if (group.line === "bottom") wrap.classList.add("line-bottom");
         if (group.note) {
           const note = document.createElement("div");
           note.className = "note";
@@ -728,10 +792,20 @@
         }
         const grid = document.createElement("div");
         grid.className = `seats cols-${group.cols}`;
-        cells.forEach((cell) => grid.appendChild(renderSeat(cell, bySeat)));
+        group.cells.flat().forEach((cell) => grid.appendChild(renderSeat(cell, bySeat)));
         wrap.appendChild(grid);
-        floor.appendChild(wrap);
+        const add = document.createElement("button");
+        add.type = "button";
+        add.className = "add-cell";
+        add.textContent = "+";
+        add.title = "Thêm ô";
+        add.setAttribute("aria-label", "Thêm ô");
+        add.addEventListener("click", () => addCellToGroup(group));
+        wrap.appendChild(add);
+        (group.side === "left" ? left : right).appendChild(wrap);
       });
+      floor.appendChild(left);
+      floor.appendChild(right);
     }
 
     function updateFileMeta() {
@@ -828,6 +902,7 @@
       if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
       btn.disabled = true;
       btn.textContent = "Đang xuất...";
+      root.classList.add("capturing");
       root.querySelectorAll("input.name").forEach((input) => {
         const span = document.createElement("span");
         span.className = "name";
@@ -851,6 +926,7 @@
         document.getElementById("msg").textContent = "Xuất ảnh thất bại. Thử in trang (Ctrl/Cmd P).";
       } finally {
         board.style.overflow = prevOverflow;
+        root.classList.remove("capturing");
         renderFloor();
         btn.disabled = false;
         btn.textContent = "Xuất ảnh";
@@ -859,6 +935,7 @@
 
     document.getElementById("btn-reset").addEventListener("click", resetNames);
 
+    loadExtras();
     loadSavedNames();
     renderEmpty();
   </script>
