@@ -3,7 +3,8 @@ import { createServer } from "node:http";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
-import { bot, startTelegram, stopTelegram, invalidateVeCache } from "./bot.js";
+import { bot, startTelegram, stopTelegram, invalidateVeCache, warmBrowser } from "./bot.js";
+import { fetchCaptureData } from "./capture-data.js";
 import { getSeats, isValidLayout, loadSeats, saveSeats, syncPublicConfig } from "./seats-store.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -26,8 +27,17 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/health", (_req, res) => {
-  res.json({ ok: true });
+app.get("/api/capture-data", async (req, res) => {
+  const date = String(req.query.date || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    res.status(400).json({ ok: false, error: "Thiếu date=YYYY-MM-DD" });
+    return;
+  }
+  try {
+    res.json(await fetchCaptureData(date));
+  } catch (err) {
+    res.status(502).json({ ok: false, error: err.message || "Không lấy được đơn" });
+  }
 });
 
 app.get("/api/seats", (_req, res) => {
@@ -78,6 +88,7 @@ server.listen(PORT, async () => {
   } catch (err) {
     console.error("Không khởi động Telegram:", err.message);
   }
+  warmBrowser().catch(() => {});
   if (publicUrl) {
     await syncPublicConfig(publicUrl);
   } else {

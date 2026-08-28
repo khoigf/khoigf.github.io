@@ -5,6 +5,7 @@ import "./env.js";
 import { Telegraf } from "telegraf";
 import { chromium } from "playwright";
 import cron from "node-cron";
+import { fetchCaptureData } from "./capture-data.js";
 import { readGithubJson, writeGithubJson } from "./seats-store.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -21,7 +22,7 @@ let browserIdleTimer = 0;
 const vePngCache = new Map();
 const veInflight = new Map();
 const VE_CACHE_MS = Number(process.env.VE_CACHE_MS) || 90_000;
-const BROWSER_IDLE_MS = 3 * 60_000;
+const BROWSER_IDLE_MS = 20 * 60_000;
 
 const CHROME_ARGS = [
   "--no-sandbox",
@@ -163,41 +164,55 @@ function scheduleBrowserIdle() {
   }, BROWSER_IDLE_MS);
 }
 
+let launchPromise = null;
+
 async function getBrowser() {
   if (sharedBrowser?.isConnected()) return sharedBrowser;
-  await closeBrowser();
-  sharedBrowser = await chromium.launch({
+  if (launchPromise) return launchPromise;
+  launchPromise = chromium.launch({
     headless: true,
     args: CHROME_ARGS,
     handleSIGINT: false,
     handleSIGTERM: false,
     timeout: 60000
+  }).then((browser) => {
+    sharedBrowser = browser;
+    browser.on("disconnected", () => {
+      if (sharedBrowser === browser) sharedBrowser = null;
+    });
+    return browser;
+  }).finally(() => {
+    launchPromise = null;
   });
-  sharedBrowser.on("disconnected", () => {
-    if (sharedBrowser) sharedBrowser = null;
-  });
-  return sharedBrowser;
+  return launchPromise;
 }
 
-async function captureMapOnce(isoDate) {
-  const browser = await getBrowser();
+async function captureMapOnce(isoDate, primed) {
+  const dataPromise = primed || fetchCaptureData(isoDate);
+  const [data, browser] = await Promise.all([dataPromise, getBrowser()]);
+  if (!data?.ok) {
+    throw new Error(data?.error || `Không có đơn ngày ${formatLabel(isoDate)}`);
+  }
   const page = await browser.newPage({
     viewport: { width: 1100, height: 800 },
     deviceScaleFactor: 1
   });
   try {
+    await page.addInitScript((payload) => {
+      window.__CAPTURE__ = payload;
+    }, data);
     const url = `${vecomBase()}/?date=${encodeURIComponent(isoDate)}&bot=1`;
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20000 });
     await page.waitForFunction(
       () => document.documentElement.dataset.veReady === "ok" || document.documentElement.dataset.veReady === "error",
-      { timeout: 25000 }
+      { timeout: 12000 }
     );
     const ready = await page.evaluate(() => document.documentElement.dataset.veReady);
     if (ready !== "ok") {
       const err = await page.evaluate(() => document.getElementById("msg")?.textContent || "");
       throw new Error(err || `Không có đơn ngày ${formatLabel(isoDate)}`);
     }
-    return await page.locator("#export-root").screenshot({ type: "jpeg", quality: 82 });
+    return await page.locator("#export-root").screenshot({ type: "jpeg", quality: 80 });
   } finally {
     await page.close().catch(() => {});
     scheduleBrowserIdle();
@@ -212,7 +227,7 @@ function enqueueCapture(task) {
   return run;
 }
 
-async function captureMap(isoDate) {
+async function captureMap(isoDate, primed) {
   const hit = cachedPng(isoDate);
   if (hit) return hit;
   if (veInflight.has(isoDate)) return veInflight.get(isoDate);
@@ -223,11 +238,12 @@ async function captureMap(isoDate) {
     let lastErr;
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        const buf = await captureMapOnce(isoDate);
+        const buf = await captureMapOnce(isoDate, primed);
         vePngCache.set(isoDate, { buf, at: Date.now() });
         return buf;
       } catch (err) {
         lastErr = err;
+        primed = null;
         const msg = String(err.message || err);
         const crashed = /has been closed|Target closed|Connection closed|browser has been closed/i.test(msg);
         await closeBrowser().catch(() => {});
@@ -244,8 +260,8 @@ async function captureMap(isoDate) {
   return job;
 }
 
-async function sendVe(chatId, isoDate, extra) {
-  const buf = await captureMap(isoDate);
+async function sendVe(chatId, isoDate, extra, primed) {
+  const buf = await captureMap(isoDate, primed);
   await bot.telegram.sendPhoto(
     chatId,
     { source: buf, filename: `ve-com-${isoDate}.jpg` },
@@ -278,9 +294,10 @@ if (bot) {
       await ctx.reply("Ngày không hợp lệ. Ví dụ: /ve hoặc /ve 28/06/2026");
       return;
     }
+    const primed = fetchCaptureData(iso);
     const wait = await ctx.reply(`Đang lấy vé ${formatLabel(iso)}...`);
     try {
-      await sendVe(ctx.chat.id, iso);
+      await sendVe(ctx.chat.id, iso, undefined, primed);
     } catch (err) {
       await ctx.reply(err.message || "Không gửi được ảnh.");
     } finally {
@@ -312,6 +329,16 @@ if (bot) {
   });
 
   bot.catch((err) => console.error("Bot error:", err));
+}
+
+export async function warmBrowser() {
+  try {
+    await getBrowser();
+    fetchCaptureData(todayISO()).catch(() => {});
+    console.log("Chromium đã làm nóng, /ve lần đầu sẽ nhanh hơn.");
+  } catch (err) {
+    console.error("Không làm nóng Chrome:", err.message);
+  }
 }
 
 export async function startTelegram(publicUrl) {

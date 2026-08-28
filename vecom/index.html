@@ -1344,7 +1344,34 @@
       });
     });
     fillGithubSettings();
-    loadSiteConfig()
+    if (BOT_MODE) {
+      const date = QUERY_DATE || todayISO();
+      const ready = window.__CAPTURE__
+        ? Promise.resolve(window.__CAPTURE__)
+        : fetch(`/api/capture-data?date=${encodeURIComponent(date)}`).then((res) => {
+          if (!res.ok) throw new Error("Không lấy được dữ liệu chụp");
+          return res.json();
+        });
+      ready
+        .then((data) => {
+          LAYOUT = hydrateLayout(data.seats);
+          renderEmpty();
+          const dateInput = document.getElementById("order-date");
+          dateInput.value = data.date || date;
+          if (!data.ok) {
+            document.getElementById("msg").textContent = data.error || "Không có đơn.";
+            setVeReady("error");
+            return;
+          }
+          applyTicketData(data.tickets, data.label, data.date);
+          setVeReady("ok");
+        })
+        .catch((err) => {
+          setVeReady("error");
+          document.getElementById("msg").textContent = err.message || "Không tải được sơ đồ.";
+        });
+    } else {
+      loadSiteConfig()
       .then(() => loadWorkingLayout())
       .then((layout) => {
         LAYOUT = layout;
@@ -1359,6 +1386,7 @@
         setVeReady("error");
         document.getElementById("msg").textContent = err.message || "Không tải được sơ đồ.";
       });
+    }
   </script>
 </body>
 </html>
