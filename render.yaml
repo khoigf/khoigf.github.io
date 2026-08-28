@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: vecom
+    runtime: docker
+    dockerfilePath: vecom/bot/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: TZ
+        value: Asia/Ho_Chi_Minh
+      - key: GITHUB_REPO
+        value: khoigf/khoigf.github.io
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false

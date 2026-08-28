@@ -1,0 +1,9 @@
+name = "vecom-save"
+main = "worker.js"
+compatibility_date = "2026-08-28"
+
+[vars]
+GITHUB_REPO = "khoigf/khoigf.github.io"
+GITHUB_PATH = "vecom/seats.json"
+GITHUB_BRANCH = "main"
+

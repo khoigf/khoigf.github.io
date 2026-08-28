@@ -415,6 +415,62 @@
 
     .drop.over { background: #0f766e22; }
 
+    .save-bar {
+      margin: 12px 0 16px;
+      padding: 14px 16px;
+      background: var(--paper);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .save-bar summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .save-bar .grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .save-bar label.field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .save-bar input[type="text"],
+    .save-bar input[type="password"] {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font: 400 13px/1.4 var(--font);
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .save-bar .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .save-bar .check {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
     @media (max-width: 900px) {
       .stats { grid-template-columns: 1fr 1fr; }
     }
@@ -425,8 +481,28 @@
 
     @media print {
       body { background: #fff; }
-      header.app, .table-wrap, .file-meta, .msg, .drop, .add-cell { display: none; }
+      header.app, .table-wrap, .file-meta, .msg, .drop, .add-cell, .stats { display: none; }
       .board, #export-root { box-shadow: none; padding: 0; }
+    }
+
+    body.bot-capture {
+      background: #fff;
+    }
+    body.bot-capture .wrap { width: max-content; margin: 0; padding: 8px; }
+    body.bot-capture header.app,
+    body.bot-capture .table-wrap,
+    body.bot-capture .file-meta,
+    body.bot-capture .msg,
+    body.bot-capture .drop,
+    body.bot-capture .stats,
+    body.bot-capture .add-cell,
+    body.bot-capture .save-bar {
+      display: none;
+    }
+    body.bot-capture .board {
+      box-shadow: none;
+      padding: 0;
+      background: #fff;
     }
   </style>
 </head>
@@ -436,7 +512,7 @@
       <div>
         <p class="eyebrow">khoigf.github.io / vecom</p>
         <h1>Sơ đồ vé cơm</h1>
-        <p class="sub">Chọn ngày để lấy đơn từ API. Vẫn có thể import Excel nếu cần. Sơ đồ lưu trong seats.json.</p>
+        <p class="sub">Sửa tên hoặc chỗ ngồi sẽ tự lưu lên máy chủ. Mở lại trang hoặc máy khác vẫn thấy sơ đồ mới.</p>
       </div>
       <div class="actions">
         <label class="date-field">
@@ -451,7 +527,7 @@
           Excel
         </label>
         <input id="file" type="file" accept=".xlsx,.xls">
-        <button class="ghost" id="btn-save-json" type="button">Lưu seats.json</button>
+        <button class="ghost" id="btn-save-json" type="button">Lưu sơ đồ</button>
         <button class="ghost" id="btn-reset" type="button">Khôi phục gốc</button>
         <button class="export" id="btn-export" type="button" disabled>Xuất ảnh</button>
       </div>
@@ -460,6 +536,34 @@
     <p class="file-meta" id="file-meta">Chọn ngày rồi bấm Tải đơn, hoặc import Excel.</p>
     <p class="msg" id="msg" role="status"></p>
     <div class="drop" id="drop">Kéo thả Excel vào đây nếu không dùng API.</div>
+
+    <p class="file-meta" id="save-hint">Đang kết nối máy chủ lưu sơ đồ…</p>
+
+    <details class="save-bar" id="save-bar">
+      <summary>Cài đặt lưu sơ đồ (chỉ khi chưa có máy chủ)</summary>
+      <div class="grid">
+        <p style="margin:0;font-size:13px;color:var(--muted);line-height:1.5">
+          Nếu trang chưa gắn server, có thể nhập token GitHub riêng. Sau khi deploy bot/server thì không cần mục này.
+        </p>
+        <label class="field">Personal Access Token
+          <input id="gh-token" type="password" autocomplete="off" placeholder="ghp_...">
+        </label>
+        <label class="field">Repo
+          <input id="gh-repo" type="text" placeholder="khoigf/khoigf.github.io">
+        </label>
+        <label class="field">Mã lưu (worker cũ)
+          <input id="save-key" type="password" autocomplete="off" placeholder="Để trống nếu dùng server mới">
+        </label>
+        <div class="row">
+          <label class="check">
+            <input id="gh-auto" type="checkbox">
+            Tự lưu khi sửa tên
+          </label>
+          <button class="ghost" id="btn-reload-remote" type="button">Lấy sơ đồ mới</button>
+          <button class="ghost" id="btn-save-settings" type="button">Nhớ trên máy này</button>
+        </div>
+      </div>
+    </details>
 
     <section class="stats" aria-label="Tổng hợp">
       <article class="stat"><span>Tổng vé</span><strong id="stat-total">0</strong></article>
@@ -506,7 +610,20 @@
   <script src="vendor/xlsx.full.min.js"></script>
   <script src="vendor/html2canvas.min.js"></script>
   <script>
+    const PAGE_PARAMS = new URLSearchParams(location.search);
+    const BOT_MODE = PAGE_PARAMS.get("bot") === "1";
+    const QUERY_DATE = PAGE_PARAMS.get("date");
+    if (BOT_MODE) document.body.classList.add("bot-capture");
+
+    function setVeReady(state) {
+      document.documentElement.dataset.veReady = state;
+    }
+    const GH_STORAGE = "vecom-github-v1";
     const LAYOUT_STORAGE = "vecom-layout-v2";
+    const GH_PATH = "vecom/seats.json";
+    const GH_BRANCH = "main";
+    let githubSaveTimer = 0;
+    let siteConfig = { saveUrl: "", needSaveKey: false };
     const SEATS_JSON = "seats.json";
     const BACKUP_JSON = "seats.backup.json";
     const ORDERS_API = "https://freelunch.quandaso.xyz/api/orders";
@@ -636,8 +753,181 @@
       };
     }
 
-    function persistLayout() {
+    function persistLocal() {
       localStorage.setItem(LAYOUT_STORAGE, JSON.stringify(serializeLayout()));
+    }
+
+    function persistLayout() {
+      persistLocal();
+      scheduleGithubSave();
+    }
+
+    function showMsg(text, ok) {
+      const msg = document.getElementById("msg");
+      msg.style.color = ok ? "var(--accent)" : "var(--danger)";
+      msg.textContent = text;
+    }
+
+    function defaultRepo() {
+      const host = location.hostname;
+      if (host.endsWith(".github.io")) return `${host.replace(".github.io", "")}/${host.replace(".github.io", "")}.github.io`;
+      return "khoigf/khoigf.github.io";
+    }
+
+    function readGithubSettings() {
+      try {
+        return JSON.parse(localStorage.getItem(GH_STORAGE) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function writeGithubSettings() {
+      const token = document.getElementById("gh-token").value.trim();
+      const repo = document.getElementById("gh-repo").value.trim() || defaultRepo();
+      const auto = document.getElementById("gh-auto").checked;
+      const saveKey = document.getElementById("save-key").value.trim();
+      localStorage.setItem(GH_STORAGE, JSON.stringify({ token, repo, auto, saveKey }));
+      return { token, repo, auto, saveKey };
+    }
+
+    function fillGithubSettings() {
+      const s = readGithubSettings();
+      document.getElementById("gh-token").value = s.token || "";
+      document.getElementById("gh-repo").value = s.repo || defaultRepo();
+      document.getElementById("gh-auto").checked = !!s.auto;
+      document.getElementById("save-key").value = s.saveKey || "";
+    }
+
+    function seatsEndpoint() {
+      const fromConfig = String(siteConfig.saveUrl || "").trim();
+      if (fromConfig) return fromConfig.replace(/\/$/, "");
+      if (location.protocol.startsWith("http") && !location.hostname.endsWith("github.io")) {
+        return `${location.origin}/api/seats`;
+      }
+      return "";
+    }
+
+    function hasSeatsApi() {
+      return !!seatsEndpoint();
+    }
+
+    function updateSaveHint() {
+      const hint = document.getElementById("save-hint");
+      const bar = document.getElementById("save-bar");
+      if (hasSeatsApi()) {
+        hint.textContent = "Sơ đồ dùng chung trên máy chủ. Sửa tên hoặc thêm ô sẽ tự lưu; máy khác mở lại trang là thấy.";
+        bar.hidden = true;
+      } else {
+        hint.textContent = "Chưa có máy chủ lưu chung. Deploy vecom/bot lên Render (xem vecom/bot/HUONG-DAN.md) rồi mọi người sẽ tự lưu được.";
+        bar.hidden = false;
+      }
+    }
+
+    async function loadSiteConfig() {
+      try {
+        siteConfig = await fetchJson("config.json");
+      } catch (_) {
+        siteConfig = { saveUrl: "", needSaveKey: false };
+      }
+      if (hasSeatsApi()) {
+        const auto = document.getElementById("gh-auto");
+        auto.checked = true;
+      }
+      updateSaveHint();
+    }
+
+    async function pushViaWorker(silent) {
+      const url = seatsEndpoint();
+      if (!url) throw new Error("Chưa có máy chủ lưu sơ đồ.");
+      const { saveKey } = writeGithubSettings();
+      if (siteConfig.needSaveKey === true && !saveKey) {
+        throw new Error("Nhập mã lưu sơ đồ rồi bấm Nhớ trên máy này.");
+      }
+      persistLocal();
+      const headers = { "Content-Type": "application/json" };
+      if (saveKey) headers["X-Save-Key"] = saveKey;
+      const res = await fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(serializeLayout())
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Lưu thất bại (${res.status})`);
+      if (!silent) showMsg("Đã lưu sơ đồ. Máy khác mở lại trang sẽ thấy.", true);
+    }
+
+    function toBase64(str) {
+      return btoa(unescape(encodeURIComponent(str)));
+    }
+
+    async function pushSeatsToGithub(silent) {
+      if (hasSeatsApi()) {
+        await pushViaWorker(silent);
+        return;
+      }
+      const { token, repo } = writeGithubSettings();
+      if (!token) throw new Error("Chưa có máy chủ lưu sơ đồ. Deploy vecom/bot hoặc nhập token GitHub.");
+      if (!repo.includes("/")) throw new Error("Repo phải dạng owner/ten-repo.");
+      persistLocal();
+      const body = JSON.stringify(serializeLayout(), null, 2);
+      const headers = {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        "X-GitHub-Api-Version": "2022-11-28"
+      };
+      const url = `https://api.github.com/repos/${repo}/contents/${GH_PATH}`;
+      const getRes = await fetch(`${url}?ref=${GH_BRANCH}`, { headers });
+      let sha;
+      if (getRes.ok) {
+        const info = await getRes.json();
+        sha = info.sha;
+      } else if (getRes.status !== 404) {
+        throw new Error("Không đọc được file trên GitHub. Kiểm tra token/repo.");
+      }
+      const putRes = await fetch(url, {
+        method: "PUT",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: "chore: cập nhật sơ đồ vé cơm",
+          content: toBase64(body),
+          branch: GH_BRANCH,
+          ...(sha ? { sha } : {})
+        })
+      });
+      if (!putRes.ok) {
+        const err = await putRes.json().catch(() => ({}));
+        throw new Error(err.message || `GitHub lưu thất bại (${putRes.status})`);
+      }
+      if (!silent) showMsg("Đã lưu tên và chỗ ngồi lên GitHub (seats.json).", true);
+    }
+
+    function scheduleGithubSave() {
+      if (BOT_MODE) return;
+      const { token, auto } = readGithubSettings();
+      const canApi = hasSeatsApi();
+      if (!canApi && !auto) return;
+      if (!canApi && !token) return;
+      if (canApi && siteConfig.needSaveKey === true && !readGithubSettings().saveKey) return;
+      clearTimeout(githubSaveTimer);
+      githubSaveTimer = setTimeout(() => {
+        pushSeatsToGithub(true).catch((err) => showMsg(err.message, false));
+      }, 1200);
+    }
+
+    async function saveLayoutNow() {
+      persistLocal();
+      if (hasSeatsApi() || readGithubSettings().token) {
+        await pushSeatsToGithub(false);
+        return;
+      }
+      const blob = new Blob([JSON.stringify(serializeLayout(), null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = SEATS_JSON;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showMsg("Đã lưu trên máy. Deploy server vecom/bot để lưu chung mọi máy.", true);
     }
 
     async function fetchJson(path) {
@@ -646,41 +936,51 @@
       return res.json();
     }
 
+    async function fetchRemoteSeats() {
+      const url = seatsEndpoint();
+      if (!url) return null;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data && data.groups ? data : null;
+    }
+
     async function loadWorkingLayout() {
       try {
-        const local = localStorage.getItem(LAYOUT_STORAGE);
-        if (local) return hydrateLayout(JSON.parse(local));
+        const remote = await fetchRemoteSeats();
+        if (remote) return hydrateLayout(remote);
       } catch (_) { /* ignore */ }
       try {
         return hydrateLayout(await fetchJson(SEATS_JSON));
-      } catch (_) {
-        return hydrateLayout(await fetchJson(BACKUP_JSON));
+      } catch (_) { /* ignore */ }
+      if (!BOT_MODE) {
+        try {
+          const local = localStorage.getItem(LAYOUT_STORAGE);
+          if (local) return hydrateLayout(JSON.parse(local));
+        } catch (_) { /* ignore */ }
       }
+      return hydrateLayout(await fetchJson(BACKUP_JSON));
     }
 
-    function downloadSeatsJson() {
-      persistLayout();
-      const blob = new Blob([JSON.stringify(serializeLayout(), null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = SEATS_JSON;
-      a.click();
-      URL.revokeObjectURL(a.href);
-      const msg = document.getElementById("msg");
-      msg.style.color = "var(--accent)";
-      msg.textContent = "Đã tải seats.json. Copy đè vào thư mục vecom/ rồi commit nếu muốn lưu trên GitHub.";
+    async function reloadRemoteLayout() {
+      const remote = await fetchRemoteSeats();
+      const data = remote || await fetchJson(SEATS_JSON);
+      LAYOUT = hydrateLayout(data);
+      persistLocal();
+      remapTickets();
+      renderFloor();
+      summarize();
+      showMsg("Đã lấy sơ đồ mới nhất.", true);
     }
 
     async function restoreBackup() {
       const data = await fetchJson(BACKUP_JSON);
       LAYOUT = hydrateLayout(data);
-      localStorage.removeItem(LAYOUT_STORAGE);
+      persistLayout();
       remapTickets();
       renderFloor();
       summarize();
-      const msg = document.getElementById("msg");
-      msg.style.color = "var(--accent)";
-      msg.textContent = "Đã khôi phục tên và chỗ gốc từ seats.backup.json.";
+      showMsg("Đã khôi phục tên và chỗ gốc từ seats.backup.json.", true);
     }
 
     function saveNames() {
@@ -958,8 +1258,10 @@
         applyTicketData(rows, `API ${formatDateLabel(date)} · ${rows.length} người`, date);
         msg.style.color = "var(--accent)";
         msg.textContent = `Đã lấy ${rows.length} đơn ngày ${formatDateLabel(date)}.`;
+        setVeReady("ok");
       } catch (err) {
         msg.textContent = err.message || "Không gọi được API.";
+        setVeReady("error");
       } finally {
         btn.disabled = false;
         btn.textContent = "Tải đơn";
@@ -1032,7 +1334,16 @@
       }
     });
 
-    document.getElementById("btn-save-json").addEventListener("click", downloadSeatsJson);
+    document.getElementById("btn-save-json").addEventListener("click", () => {
+      saveLayoutNow().catch((err) => showMsg(err.message, false));
+    });
+    document.getElementById("btn-save-settings").addEventListener("click", () => {
+      writeGithubSettings();
+      showMsg("Đã nhớ mã/cài đặt trên máy này.", true);
+    });
+    document.getElementById("btn-reload-remote").addEventListener("click", () => {
+      reloadRemoteLayout().catch((err) => showMsg(err.message, false));
+    });
     document.getElementById("btn-reset").addEventListener("click", () => {
       restoreBackup().catch((err) => {
         const msg = document.getElementById("msg");
@@ -1040,18 +1351,20 @@
         msg.textContent = err.message || "Không khôi phục được backup.";
       });
     });
-
-    loadWorkingLayout()
+    fillGithubSettings();
+    loadSiteConfig()
+      .then(() => loadWorkingLayout())
       .then((layout) => {
         LAYOUT = layout;
         renderEmpty();
         const dateInput = document.getElementById("order-date");
-        dateInput.value = todayISO();
+        dateInput.value = QUERY_DATE || todayISO();
         dateInput.addEventListener("change", () => loadOrders(dateInput.value));
         document.getElementById("btn-load-api").addEventListener("click", () => loadOrders(dateInput.value));
         return loadOrders(dateInput.value);
       })
       .catch((err) => {
+        setVeReady("error");
         document.getElementById("msg").textContent = err.message || "Không tải được sơ đồ.";
       });
   </script>
