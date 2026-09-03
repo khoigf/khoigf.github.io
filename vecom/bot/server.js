@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
-import { bot, startTelegram, stopTelegram, invalidateVeCache, warmBrowser } from "./bot.js";
+import { bot, startTelegram, stopTelegram, invalidateVeCache } from "./bot.js";
 import { fetchCaptureData } from "./capture-data.js";
 import { getSeats, isValidLayout, loadSeats, saveSeats, syncPublicConfig } from "./seats-store.js";
 
@@ -25,6 +25,10 @@ app.use((req, res, next) => {
     return;
   }
   next();
+});
+
+app.get("/health", (_req, res) => {
+  res.json({ ok: true });
 });
 
 app.get("/api/capture-data", async (req, res) => {
@@ -64,7 +68,12 @@ app.post("/api/seats", async (req, res) => {
 });
 
 if (bot) {
-  app.use(bot.webhookCallback("/telegram-webhook"));
+  app.post("/telegram-webhook", (req, res) => {
+    res.sendStatus(200);
+    bot.handleUpdate(req.body).catch((err) => {
+      console.error("Telegram update:", err);
+    });
+  });
 }
 
 app.use((req, res, next) => {
@@ -79,20 +88,15 @@ app.use(express.static(VECOM_DIR, { index: "index.html", extensions: ["html"] })
 
 const server = createServer(app);
 
-await loadSeats();
-
-server.listen(PORT, async () => {
+server.listen(PORT, () => {
   console.log(`Vecom server http://127.0.0.1:${PORT}`);
-  try {
-    await startTelegram(publicUrl);
-  } catch (err) {
-    console.error("Không khởi động Telegram:", err.message);
-  }
-  warmBrowser().catch(() => {});
+  loadSeats().catch((err) => console.error("Không tải seats.json:", err.message));
+  startTelegram(publicUrl).catch((err) => console.error("Không khởi động Telegram:", err.message));
   if (publicUrl) {
-    await syncPublicConfig(publicUrl);
-  } else {
-    console.log("Chưa có PUBLIC_URL — trang GitHub Pages chưa tự gắn API. Máy local: http://127.0.0.1:" + PORT);
+    syncPublicConfig(publicUrl).catch((err) => console.error("Không gắn config.json:", err.message));
+    setInterval(() => {
+      fetch(`${publicUrl}/health`).catch(() => {});
+    }, 8 * 60 * 1000);
   }
 });
 
@@ -103,5 +107,8 @@ async function shutdown(signal) {
   setTimeout(() => process.exit(0), 4000);
 }
 
+process.on("unhandledRejection", (err) => {
+  console.error("unhandledRejection:", err);
+});
 process.once("SIGINT", () => shutdown("SIGINT"));
 process.once("SIGTERM", () => shutdown("SIGTERM"));

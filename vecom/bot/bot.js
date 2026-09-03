@@ -280,6 +280,17 @@ const HELP = [
   "/id — xem chat id (để điền TELEGRAM_CHAT_ID)"
 ].join("\n");
 
+const VE_DEDUP_MS = 45_000;
+const recentVe = new Map();
+
+function skipDuplicateVe(chatId, iso) {
+  const key = `${chatId}:${iso}`;
+  const at = recentVe.get(key);
+  if (at && Date.now() - at < VE_DEDUP_MS) return true;
+  recentVe.set(key, Date.now());
+  return false;
+}
+
 if (bot) {
   bot.start((ctx) => ctx.reply(HELP));
   bot.help((ctx) => ctx.reply(HELP));
@@ -294,6 +305,7 @@ if (bot) {
       await ctx.reply("Ngày không hợp lệ. Ví dụ: /ve hoặc /ve 28/06/2026");
       return;
     }
+    if (skipDuplicateVe(ctx.chat.id, iso)) return;
     const primed = fetchCaptureData(iso);
     const wait = await ctx.reply(`Đang lấy vé ${formatLabel(iso)}...`);
     try {
@@ -329,16 +341,6 @@ if (bot) {
   });
 
   bot.catch((err) => console.error("Bot error:", err));
-}
-
-export async function warmBrowser() {
-  try {
-    await getBrowser();
-    fetchCaptureData(todayISO()).catch(() => {});
-    console.log("Chromium đã làm nóng, /ve lần đầu sẽ nhanh hơn.");
-  } catch (err) {
-    console.error("Không làm nóng Chrome:", err.message);
-  }
 }
 
 export async function startTelegram(publicUrl) {

@@ -89,19 +89,19 @@ Pages sẽ có `https://khoigf.github.io/vecom/`. Lưu sơ đồ dùng chung ch�
 
 Sau 1–2 phút, `vecom/config.json` trên GitHub có `saveUrl`. Trang Pages cũng lưu được, không cần ai nhập thêm gì.
 
-### Giữ server không ngủ (để `/lich` chạy đúng giờ)
+### Giữ server không ngủ (bắt buộc với gói Free)
 
-Free Render tắt sau ~15 phút không có request. Lịch `/lich 09:00` sẽ **không** chạy nếu máy đang ngủ.
+Free Render **tắt sau ~15 phút** không có HTTP. `/ve` lúc đó phải khởi động lại Docker (chậm, dễ timeout Telegram).
 
-Tạo monitor miễn phí tại [https://uptimerobot.com](https://uptimerobot.com):
+Tạo monitor tại [https://uptimerobot.com](https://uptimerobot.com) (hoặc dịch vụ ping tương tự):
 
 - Type: HTTP(s)
-- URL: `https://vecom-xxxx.onrender.com/health`
-- Interval: 5 phút
+- URL: `https://khoigf-github-io.onrender.com/health`
+- Interval: **5 phút**
 
-750 giờ Free/tháng gần đủ cho 1 service chạy cả tháng.
+Không ping thì sau vài ngày không dùng, `/ve` có thể im 5–6 phút và phải deploy lại.
 
-`/ve` khi đang ngủ vẫn được: Telegram gọi webhook → Render thức → trả ảnh (lần đầu có thể 30–60 giây).
+Sau khi server đã thức, process tự ping `/health` mỗi 8 phút để đỡ ngủ tiếp trong ngày làm việc.
 
 ---
 
