@@ -9,7 +9,14 @@
     "remindEnabled": false,
     "remindChatId": null
   },
-  "members": [],
+  "members": [
+    {
+      "id": "m_mtnzoxhf_30p3w0",
+      "name": "Khôi",
+      "telegramId": null,
+      "active": true
+    }
+  ],
   "transactions": [],
-  "updatedAt": null
+  "updatedAt": "2026-09-05T06:16:09.603Z"
 }
