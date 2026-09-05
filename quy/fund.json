@@ -32,6 +32,12 @@
       "id": "m_mto3ehcc_37z2qw",
       "name": "KỳKỳ",
       "telegramId": null,
+      "active": false
+    },
+    {
+      "id": "m_mto3liat_rum6ie",
+      "name": "Kỳ",
+      "telegramId": null,
       "active": true
     }
   ],
@@ -185,7 +191,37 @@
       "month": "2026-09",
       "at": "2026-09-05T08:00:00.588Z",
       "by": "web"
+    },
+    {
+      "id": "tx_mto3liat_4qvol6",
+      "type": "charge",
+      "memberId": "m_mto3liat_rum6ie",
+      "amount": 100000,
+      "note": "Công nợ tháng 2026-09",
+      "month": "2026-09",
+      "at": "2026-09-05T08:05:28.421Z",
+      "by": "web"
+    },
+    {
+      "id": "tx_mto3lnd5_ivy66d",
+      "type": "contribute",
+      "memberId": "m_mto3liat_rum6ie",
+      "amount": 100000,
+      "note": "",
+      "month": "2026-09",
+      "at": "2026-09-05T08:05:34.985Z",
+      "by": "web"
+    },
+    {
+      "id": "tx_mto3lv3e_y6jtsp",
+      "type": "expense",
+      "memberId": null,
+      "amount": 100000,
+      "note": "",
+      "month": null,
+      "at": "2026-09-05T08:05:45.002Z",
+      "by": "web"
     }
   ],
-  "updatedAt": "2026-09-05T08:00:00.588Z"
+  "updatedAt": "2026-09-05T08:05:45.002Z"
 }
