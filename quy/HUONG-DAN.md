@@ -17,7 +17,8 @@ Chạy chung server Docker với vé cơm (`vecom/bot`).
 | Xem tổng quỹ + tháng này | Có | `/quy` |
 | Số dư từng người | Có | `/sodu` |
 | Ai chưa đóng tháng này | Có | `/no` |
-| Ghi đóng quỹ cá nhân | Có | `/dong An 100k` |
+| Ghi đóng quỹ cá nhân | Có | `/dong An 100k` (thừa → cộng số dư) |
+| Đóng thêm cả nhóm | Có | `/dongthem 50k` (trừ mỗi người + vào quỹ) |
 | Chi từ quỹ | Có | `/chi 50k ăn tối` |
 | Rút/hoàn cá nhân | Có | `/rut An 50k` |
 | Thêm / ẩn thành viên | Có | `/them An`, `/xoa An` |

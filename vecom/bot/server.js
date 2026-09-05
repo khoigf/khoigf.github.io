@@ -21,7 +21,8 @@ import {
   findMember,
   parseAmount,
   flushFundToGithub,
-  fundFlushStatus
+  fundFlushStatus,
+  levyAll
 } from "./quy-store.js";
 import { quyBot, startQuyBot, stopQuyBot } from "./quy-bot.js";
 import { syncQuyConfig } from "./quy-store.js";
@@ -169,6 +170,16 @@ app.post("/api/quy/transactions", async (req, res) => {
     res.json({ ...fundPayload(fund), tx });
   } catch (err) {
     res.status(400).json({ ok: false, error: err.message || "Ghi giao dịch thất bại" });
+  }
+});
+
+app.post("/api/quy/levy", async (req, res) => {
+  try {
+    const amount = req.body?.amount != null ? Number(req.body.amount) : parseAmount(req.body?.amountRaw);
+    const fund = await levyAll(amount, req.body?.note || "Đóng thêm", req.body?.by || "web");
+    res.json(fundPayload(fund));
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message || "Đóng thêm thất bại" });
   }
 });
 

@@ -384,7 +384,7 @@
           <div class="field">
             <label for="tx-type">Loại</label>
             <select id="tx-type">
-              <option value="contribute">Đóng quỹ (cộng)</option>
+              <option value="contribute">Nộp quỹ (/dong) — thừa cộng số dư</option>
               <option value="expense">Chi từ quỹ</option>
               <option value="withdraw">Rút / hoàn cá nhân</option>
             </select>
@@ -405,6 +405,21 @@
           </div>
           <div class="btn-row">
             <button class="primary" id="btn-tx" type="button">Lưu giao dịch</button>
+          </div>
+          <hr style="border:none;border-top:1px solid var(--line);margin:8px 0 4px">
+          <p class="hint" style="margin-bottom:8px">Đóng thêm: trừ đúng số đó trên <strong>mọi người</strong> và cộng vào quỹ.</p>
+          <div class="row">
+            <div class="field">
+              <label for="levy-amount">Số đóng thêm / người</label>
+              <input id="levy-amount" inputmode="decimal" placeholder="50000 hoặc 50k">
+            </div>
+            <div class="field">
+              <label for="levy-note">Ghi chú</label>
+              <input id="levy-note" placeholder="Đóng thêm">
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="ghost" id="btn-levy" type="button">Đóng thêm cả nhóm</button>
           </div>
         </section>
 
@@ -509,9 +524,11 @@
 
     function typeLabel(t) {
       return ({
-        contribute: "Đóng quỹ",
+        contribute: "Nộp quỹ",
         expense: "Chi quỹ",
         withdraw: "Rút/hoàn",
+        charge: "Công nợ tháng",
+        levy: "Đóng thêm",
         adjust_in: "Điều chỉnh +",
         adjust_out: "Điều chỉnh −"
       })[t] || t;
@@ -544,7 +561,7 @@
               <button class="tiny" type="button" data-remove="${escapeHtml(s.id)}">Ẩn thành viên</button>
             </div>
             <div style="text-align:right">
-              <div class="balance">${formatVnd(s.balance)}</div>
+              <div class="balance" style="${s.balance < 0 ? "color:var(--danger)" : s.balance > 0 ? "color:var(--ok)" : ""}">${formatVnd(s.balance)}</div>
               <div style="margin-top:6px">
                 <span class="badge ${s.done ? "ok" : "wait"}">${s.done ? "Đủ tháng" : "Chưa đủ"}</span>
               </div>
@@ -565,16 +582,22 @@
       } else {
         const nameOf = Object.fromEntries(fund.members.map((m) => [m.id, m.name]));
         hist.innerHTML = txs.map((t) => {
-          const inbound = t.type === "contribute" || t.type === "adjust_in";
+          const inbound = t.type === "contribute" || t.type === "adjust_in" || t.type === "levy";
           const who = t.memberId ? nameOf[t.memberId] || "?" : "Quỹ chung";
           const when = new Date(t.at).toLocaleString("vi-VN", { hour12: false });
+          const sign = t.type === "charge" || t.type === "withdraw" || t.type === "adjust_out" || t.type === "expense"
+            ? "−"
+            : inbound
+              ? "+"
+              : "−";
+          const amtClass = t.type === "charge" ? "out" : inbound ? "in" : "out";
           return `
             <div class="tx">
               <div>
                 <strong>${typeLabel(t.type)}</strong> · ${escapeHtml(who)}${t.note ? ` — ${escapeHtml(t.note)}` : ""}
                 <div class="when">${escapeHtml(when)}${t.month ? ` · ${escapeHtml(t.month)}` : ""}</div>
               </div>
-              <div class="amt ${inbound ? "in" : "out"}">${inbound ? "+" : "−"}${formatVnd(t.amount)}</div>
+              <div class="amt ${amtClass}">${sign}${formatVnd(t.amount)}</div>
             </div>
           `;
         }).join("");
@@ -656,6 +679,23 @@
         $("tx-note").value = "";
         render();
         toast("Đã lưu giao dịch.");
+      } catch (e) {
+        toast(e.message, true);
+      }
+    });
+
+    $("btn-levy").addEventListener("click", async () => {
+      const amount = parseAmount($("levy-amount").value);
+      if (!amount) return toast("Số tiền đóng thêm không hợp lệ.", true);
+      if (!confirm(`Trừ ${formatVnd(amount)} mỗi người và cộng vào quỹ?`)) return;
+      try {
+        state = await api("/levy", {
+          method: "POST",
+          body: JSON.stringify({ amount, note: $("levy-note").value.trim() || "Đóng thêm", by: "web" })
+        });
+        $("levy-amount").value = "";
+        render();
+        toast("Đã đóng thêm cả nhóm.");
       } catch (e) {
         toast(e.message, true);
       }

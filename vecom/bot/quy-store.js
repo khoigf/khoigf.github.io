@@ -125,12 +125,16 @@ export function getFund() {
 }
 
 export async function loadFund(force = false) {
-  if (cache && (!force || dirty)) return cache;
+  if (cache && (!force || dirty)) {
+    await ensureMonthCharges();
+    return cache;
+  }
   try {
     const remote = await readGithubJson(GH_PATH);
     if (remote) {
       cache = normalize(remote);
       writeLocal(cache);
+      await ensureMonthCharges();
       return cache;
     }
   } catch (err) {
@@ -138,6 +142,7 @@ export async function loadFund(force = false) {
   }
   cache = readLocal() || emptyFund();
   writeLocal(cache);
+  await ensureMonthCharges();
   return cache;
 }
 
@@ -230,7 +235,9 @@ export function memberBalances(fund) {
   for (const t of fund.transactions) {
     if (!t.memberId || !(t.memberId in map)) continue;
     if (t.type === "contribute" || t.type === "adjust_in") map[t.memberId] += t.amount;
-    if (t.type === "withdraw" || t.type === "adjust_out") map[t.memberId] -= t.amount;
+    if (t.type === "withdraw" || t.type === "adjust_out" || t.type === "charge" || t.type === "levy") {
+      map[t.memberId] -= t.amount;
+    }
   }
   return map;
 }
@@ -238,7 +245,7 @@ export function memberBalances(fund) {
 export function fundTotal(fund) {
   let total = 0;
   for (const t of fund.transactions) {
-    if (t.type === "contribute" || t.type === "adjust_in") total += t.amount;
+    if (t.type === "contribute" || t.type === "adjust_in" || t.type === "levy") total += t.amount;
     if (t.type === "expense" || t.type === "withdraw" || t.type === "adjust_out") total -= t.amount;
   }
   return total;
@@ -250,6 +257,55 @@ export function monthPaid(fund, memberId, month = monthKey()) {
     .reduce((s, t) => s + t.amount, 0);
 }
 
+export function monthCharged(fund, memberId, month = monthKey()) {
+  return fund.transactions
+    .filter((t) => t.memberId === memberId && t.type === "charge" && t.month === month)
+    .reduce((s, t) => s + t.amount, 0);
+}
+
+/**
+ * Mỗi tháng gắn công nợ = mức đóng (vd -100k). Chưa /dong thì số dư âm đúng mức đó.
+ * Đóng đủ thì hòa; đóng thừa thì phần dư còn trên số dư.
+ */
+export async function ensureMonthCharges(month = monthKey()) {
+  if (!cache) {
+    // tải thô, chưa apply charge (tránh đệ quy)
+    try {
+      const remote = await readGithubJson(GH_PATH);
+      if (remote) cache = normalize(remote);
+    } catch {
+      /* ignore */
+    }
+    if (!cache) cache = readLocal() || emptyFund();
+    writeLocal(cache);
+  }
+
+  const due = cache.settings.monthlyAmount;
+  if (due <= 0) return cache;
+
+  let added = 0;
+  for (const m of cache.members.filter((x) => x.active !== false)) {
+    const has = cache.transactions.some((t) => t.type === "charge" && t.memberId === m.id && t.month === month);
+    if (has) continue;
+    cache.transactions.push({
+      id: uid("tx"),
+      type: "charge",
+      memberId: m.id,
+      amount: due,
+      note: `Công nợ tháng ${month}`,
+      month,
+      at: new Date().toISOString(),
+      by: "system"
+    });
+    added += 1;
+  }
+  if (added) {
+    if (cache.transactions.length > 500) cache.transactions = cache.transactions.slice(-500);
+    await saveFund(cache, `chore(quy): công nợ tháng ${month} (${added} người)`);
+  }
+  return cache;
+}
+
 export function monthStatus(fund, month = monthKey()) {
   const due = fund.settings.monthlyAmount;
   const balances = memberBalances(fund);
@@ -257,13 +313,14 @@ export function monthStatus(fund, month = monthKey()) {
     .filter((m) => m.active !== false)
     .map((m) => {
       const paid = monthPaid(fund, m.id, month);
+      const charged = monthCharged(fund, m.id, month) || due;
       return {
         id: m.id,
         name: m.name,
         paid,
-        due,
-        remaining: Math.max(0, due - paid),
-        done: paid >= due,
+        due: charged,
+        remaining: Math.max(0, charged - paid),
+        done: paid >= charged,
         balance: balances[m.id] || 0
       };
     });
@@ -318,6 +375,20 @@ export async function addMember(name, by = null) {
   }
   if (findMember(fund, clean)) throw new Error(`Đã có thành viên “${clean}”`);
   fund.members.push({ id: uid("m"), name: clean, telegramId: null, active: true });
+  const month = monthKey();
+  const due = fund.settings.monthlyAmount;
+  if (due > 0) {
+    fund.transactions.push({
+      id: uid("tx"),
+      type: "charge",
+      memberId: fund.members[fund.members.length - 1].id,
+      amount: due,
+      note: `Công nợ tháng ${month}`,
+      month,
+      at: new Date().toISOString(),
+      by: by || "system"
+    });
+  }
   await saveFund(fund, `chore(quy): thêm ${clean}`);
   return getFund();
 }
@@ -335,20 +406,30 @@ export async function addTransaction({ type, memberId = null, amount, note = "",
   const fund = await loadFund();
   const value = Math.round(Number(amount));
   if (!Number.isFinite(value) || value <= 0) throw new Error("Số tiền không hợp lệ");
-  const allowed = ["contribute", "expense", "withdraw", "adjust_in", "adjust_out"];
+  const allowed = ["contribute", "expense", "withdraw", "adjust_in", "adjust_out", "charge", "levy"];
   if (!allowed.includes(type)) throw new Error("Loại giao dịch không hợp lệ");
-  if ((type === "contribute" || type === "withdraw" || type === "adjust_in" || type === "adjust_out") && memberId) {
+  if (
+    (type === "contribute" ||
+      type === "withdraw" ||
+      type === "adjust_in" ||
+      type === "adjust_out" ||
+      type === "charge" ||
+      type === "levy") &&
+    memberId
+  ) {
     if (!fund.members.some((m) => m.id === memberId && m.active !== false)) {
       throw new Error("Thành viên không hợp lệ");
     }
   }
+  const txMonth =
+    type === "contribute" || type === "charge" || type === "levy" ? month || monthKey() : month;
   const tx = {
     id: uid("tx"),
     type,
     memberId: memberId || null,
     amount: value,
     note: String(note || "").slice(0, 200),
-    month: type === "contribute" ? month || monthKey() : month,
+    month: txMonth,
     at: new Date().toISOString(),
     by: by || null
   };
@@ -378,6 +459,36 @@ export async function updateSettings(patch, by = null) {
 export async function replaceFund(body) {
   const fund = normalize(body);
   await saveFund(fund, "chore(quy): đồng bộ từ trang quản lý");
+  await ensureMonthCharges();
+  return getFund();
+}
+
+/**
+ * Đóng thêm: trừ đúng số tiền trên mỗi người và cộng vào quỹ (type levy).
+ */
+export async function levyAll(amount, note = "Đóng thêm", by = null) {
+  await loadFund();
+  const value = Math.round(Number(amount));
+  if (!Number.isFinite(value) || value <= 0) throw new Error("Số tiền không hợp lệ");
+  const fund = getFund();
+  const members = fund.members.filter((m) => m.active !== false);
+  if (!members.length) throw new Error("Chưa có thành viên");
+  const month = monthKey();
+  const at = new Date().toISOString();
+  for (const m of members) {
+    fund.transactions.push({
+      id: uid("tx"),
+      type: "levy",
+      memberId: m.id,
+      amount: value,
+      note: String(note || "Đóng thêm").slice(0, 200),
+      month,
+      at,
+      by: by || null
+    });
+  }
+  if (fund.transactions.length > 500) fund.transactions = fund.transactions.slice(-500);
+  await saveFund(fund, `chore(quy): đóng thêm ${value} × ${members.length}`);
   return getFund();
 }
 
@@ -389,10 +500,13 @@ export function summaryText(fund) {
   const lines = [
     `💰 ${fund.name}`,
     `Tổng quỹ: ${formatVnd(total)}`,
-    `Mức đóng tháng ${month}: ${formatVnd(fund.settings.monthlyAmount)} / người`,
+    `Công nợ tháng ${month}: ${formatVnd(fund.settings.monthlyAmount)}/người (chưa đóng = số dư âm)`,
     `Đã đóng: ${paidCount}/${status.length}`,
     "",
-    ...status.map((s) => `${s.done ? "✅" : "⏳"} ${s.name}: ${formatVnd(s.paid)}/${formatVnd(s.due)} · số dư ${formatVnd(s.balance)}`)
+    ...status.map((s) => {
+      const mark = s.done ? "✅" : "⏳";
+      return `${mark} ${s.name}: nộp ${formatVnd(s.paid)}/${formatVnd(s.due)} · số dư ${formatVnd(s.balance)}`;
+    })
   ];
   return lines.join("\n");
 }

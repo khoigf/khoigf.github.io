@@ -16,7 +16,8 @@ import {
   monthStatus,
   monthKey,
   memberBalances,
-  fundTotal
+  fundTotal,
+  levyAll
 } from "./quy-store.js";
 import { writeGithubJson, readGithubJson } from "./seats-store.js";
 
@@ -39,7 +40,8 @@ const HELP = [
   "/quy — tổng quỹ + tháng này",
   "/sodu — số dư từng người",
   "/no — ai chưa đóng tháng này",
-  "/dong Tên 100k — ghi đóng quỹ",
+  "/dong Tên 100k — nộp quỹ (thừa thì cộng số dư, không mất)",
+  "/dongthem 50k — trừ mỗi người 50k và + vào quỹ",
   "/chi 50k ghi chú — chi từ quỹ",
   "/rut Tên 50k — rút/hoàn cho cá nhân",
   "/them Tên — thêm thành viên",
@@ -226,7 +228,7 @@ export function registerQuyCommands(bot, { mergeHelp = false } = {}) {
   bot.command("dong", async (ctx) => {
     const parsed = parseNameAmount(ctx.message.text, "dong");
     if (!parsed) {
-      await ctx.reply("Cú pháp: /dong Tên 100000  hoặc  /dong An 100k");
+      await ctx.reply("Cú pháp: /dong Tên 100000  hoặc  /dong An 100k\nNộp bao nhiêu cộng vào quỹ bấy nhiêu; phần thừa giữ trên số dư.");
       return;
     }
     const fund = await loadFund();
@@ -249,11 +251,36 @@ export function registerQuyCommands(bot, { mergeHelp = false } = {}) {
         by: ctx.from?.username || ctx.from?.first_name
       });
       const st = monthStatus(next).find((s) => s.id === member.id);
+      const bal = memberBalances(next)[member.id] || 0;
+      const extra =
+        st.paid > st.due ? `\nPhần thừa tháng này: ${formatVnd(st.paid - st.due)} (cộng số dư)` : "";
       await ctx.reply(
-        `Đã ghi ${member.name} đóng ${formatVnd(amount)}.\nTháng này: ${formatVnd(st.paid)}/${formatVnd(st.due)}\nTổng quỹ: ${formatVnd(fundTotal(next))}`
+        `Đã ghi ${member.name} nộp ${formatVnd(amount)}.\nTháng này: ${formatVnd(st.paid)}/${formatVnd(st.due)}\nSố dư: ${formatVnd(bal)}${extra}\nTổng quỹ: ${formatVnd(fundTotal(next))}`
       );
     } catch (err) {
       await ctx.reply(err.message || "Ghi thất bại.");
+    }
+  });
+
+  bot.command("dongthem", async (ctx) => {
+    const raw = String(ctx.message.text || "")
+      .replace(/^\/dongthem(?:@\w+)?/i, "")
+      .trim();
+    const parts = raw.match(/^(\S+)\s*(.*)$/);
+    const amount = parseAmount(parts?.[1] || "");
+    if (!amount) {
+      await ctx.reply("Cú pháp: /dongthem 50000  hoặc  /dongthem 50k ăn uống");
+      return;
+    }
+    const note = (parts?.[2] || "Đóng thêm").trim() || "Đóng thêm";
+    try {
+      const fund = await levyAll(amount, note, ctx.from?.username || ctx.from?.first_name);
+      const n = fund.members.filter((m) => m.active !== false).length;
+      await ctx.reply(
+        `Đóng thêm ${formatVnd(amount)} × ${n} người.\nĐã trừ mỗi người và + ${formatVnd(amount * n)} vào quỹ.\nTổng quỹ: ${formatVnd(fundTotal(fund))}`
+      );
+    } catch (err) {
+      await ctx.reply(err.message || "Đóng thêm thất bại.");
     }
   });
 
