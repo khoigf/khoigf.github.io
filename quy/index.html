@@ -555,6 +555,7 @@
         expense: "Chi quỹ",
         withdraw: "Rút/hoàn",
         charge: "Công nợ tháng",
+        cover: "Tự trừ từ số dư",
         levy: "Đóng thêm",
         adjust_in: "Điều chỉnh +",
         adjust_out: "Điều chỉnh −"
@@ -618,7 +619,7 @@
       } else {
         const nameOf = Object.fromEntries(fund.members.map((m) => [m.id, m.name]));
         hist.innerHTML = txs.map((t) => {
-          const inbound = t.type === "contribute" || t.type === "adjust_in" || t.type === "levy";
+          const inbound = t.type === "contribute" || t.type === "adjust_in" || t.type === "levy" || t.type === "cover";
           const who = t.memberId ? nameOf[t.memberId] || "?" : "Quỹ chung";
           const when = new Date(t.at).toLocaleString("vi-VN", { hour12: false });
           const sign = t.type === "charge" || t.type === "withdraw" || t.type === "adjust_out" || t.type === "expense"
