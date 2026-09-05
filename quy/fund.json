@@ -31,35 +31,75 @@
   ],
   "transactions": [
     {
-      "id": "tx_mto05o2b_6r8aas",
+      "id": "tx_open_charge_khoi",
+      "type": "charge",
+      "memberId": "m_mtnzoxhf_30p3w0",
+      "amount": 100000,
+      "note": "Công nợ tháng 2026-09",
+      "month": "2026-09",
+      "at": "2026-09-01T00:00:00.000Z",
+      "by": "system"
+    },
+    {
+      "id": "tx_open_charge_quan",
+      "type": "charge",
+      "memberId": "m_mtnzxeyz_66soqq",
+      "amount": 100000,
+      "note": "Công nợ tháng 2026-09",
+      "month": "2026-09",
+      "at": "2026-09-01T00:00:00.000Z",
+      "by": "system"
+    },
+    {
+      "id": "tx_open_charge_bao",
+      "type": "charge",
+      "memberId": "m_mtnzxi9y_gd4yrr",
+      "amount": 100000,
+      "note": "Công nợ tháng 2026-09",
+      "month": "2026-09",
+      "at": "2026-09-01T00:00:00.000Z",
+      "by": "system"
+    },
+    {
+      "id": "tx_open_pay_khoi",
+      "type": "contribute",
+      "memberId": "m_mtnzoxhf_30p3w0",
+      "amount": 316000,
+      "note": "Đã đóng tháng 9 + số dư đầu kỳ",
+      "month": "2026-09",
+      "at": "2026-09-05T07:00:00.000Z",
+      "by": "web"
+    },
+    {
+      "id": "tx_open_pay_bao",
       "type": "contribute",
       "memberId": "m_mtnzxi9y_gd4yrr",
       "amount": 100000,
-      "note": "",
+      "note": "Đã đóng tháng 9",
       "month": "2026-09",
-      "at": "2026-09-05T06:29:10.548Z",
+      "at": "2026-09-05T07:00:00.000Z",
       "by": "web"
     },
     {
-      "id": "tx_mto086am_bq1m4j",
+      "id": "tx_open_pay_quan",
       "type": "contribute",
       "memberId": "m_mtnzxeyz_66soqq",
-      "amount": 100000,
-      "note": "",
+      "amount": 373000,
+      "note": "Đã đóng tháng 9 + số dư đầu kỳ",
       "month": "2026-09",
-      "at": "2026-09-05T06:31:07.487Z",
+      "at": "2026-09-05T07:00:00.000Z",
       "by": "web"
     },
     {
-      "id": "tx_mto08aag_tr6dwp",
-      "type": "contribute",
-      "memberId": "m_mtnzoxhf_30p3w0",
-      "amount": 100000,
-      "note": "",
-      "month": "2026-09",
-      "at": "2026-09-05T06:31:12.664Z",
+      "id": "tx_open_adjust_fund",
+      "type": "expense",
+      "memberId": null,
+      "amount": 195000,
+      "note": "Điều chỉnh khớp tổng quỹ đầu kỳ 594k",
+      "month": null,
+      "at": "2026-09-05T07:00:01.000Z",
       "by": "web"
     }
   ],
-  "updatedAt": "2026-09-05T06:31:12.664Z"
+  "updatedAt": "2026-09-05T07:29:16.804Z"
 }
