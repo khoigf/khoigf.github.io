@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "name": "Quỹ nhóm",
+  "settings": {
+    "monthlyAmount": 100000,
+    "dueDay": 5,
+    "remindHour": 9,
+    "remindMinute": 0,
+    "remindEnabled": false,
+    "remindChatId": null
+  },
+  "members": [],
+  "transactions": [],
+  "updatedAt": null
+}

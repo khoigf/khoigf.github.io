@@ -277,7 +277,9 @@ const HELP = [
   "/lich 09:00 — gửi T2–T6 lúc 09:00",
   "/lich 09:00 * — gửi mỗi ngày lúc 09:00",
   "/lich off — tắt lịch",
-  "/id — xem chat id (để điền TELEGRAM_CHAT_ID)"
+  "/id — xem chat id (để điền TELEGRAM_CHAT_ID)",
+  "",
+  "Quỹ nhóm (nếu bật trên cùng bot): /trogiupquy"
 ].join("\n");
 
 const VE_DEDUP_MS = 45_000;

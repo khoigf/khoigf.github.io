@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quỹ nhóm | Khoi GF</title>
+  <link rel="icon" type="image/x-icon" href="../favicon123.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #eef6f1;
+      --ink: #14231c;
+      --muted: #5a6f64;
+      --line: #c9ddd2;
+      --paper: #f7fcf9;
+      --accent: #0d7a5f;
+      --accent-2: #1a5f4a;
+      --accent-soft: #d8f3e8;
+      --warn: #b45309;
+      --danger: #b42318;
+      --ok: #047857;
+      --shadow: 0 18px 50px rgba(20, 35, 28, 0.08);
+      --radius: 18px;
+      --font: "Manrope", "Segoe UI", sans-serif;
+      --display: "Fraunces", Georgia, serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--ink);
+      font-family: var(--font);
+      background:
+        radial-gradient(900px 420px at 0% -10%, #a7f3d055, transparent 55%),
+        radial-gradient(800px 380px at 100% 0%, #86efac44, transparent 50%),
+        linear-gradient(180deg, #f3faf6 0%, var(--bg) 40%, #e7f2eb 100%);
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 3px solid #0d7a5f55;
+      outline-offset: 2px;
+    }
+
+    .wrap {
+      width: min(1100px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 72px;
+    }
+
+    header.hero {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 28px;
+      animation: rise 0.55s ease both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+
+    .brand-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: clamp(34px, 6vw, 52px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      font-weight: 700;
+    }
+
+    .sub {
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 42ch;
+      line-height: 1.5;
+    }
+
+    .total-block {
+      padding: 22px 24px;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, #0d7a5f 0%, #146b54 45%, #1a5f4a 100%);
+      color: #f4fffa;
+      box-shadow: var(--shadow);
+      min-width: min(100%, 280px);
+      animation: rise 0.7s ease 0.08s both;
+    }
+
+    .total-block .label {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .total-block .amount {
+      margin: 8px 0 0;
+      font-family: var(--display);
+      font-size: clamp(32px, 5vw, 44px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .total-block .meta {
+      margin: 10px 0 0;
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: 1.4fr 1fr;
+    }
+
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    section.panel {
+      background: color-mix(in srgb, var(--paper) 92%, white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 18px 16px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset;
+      animation: rise 0.6s ease both;
+    }
+
+    section.panel h2 {
+      margin: 0 0 4px;
+      font-family: var(--display);
+      font-size: 1.35rem;
+      font-weight: 600;
+    }
+
+    section.panel .hint {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .members {
+      display: grid;
+      gap: 10px;
+    }
+
+    .member {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 12px;
+      align-items: center;
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .member:first-child { border-top: 0; padding-top: 2px; }
+
+    .member .name {
+      font-weight: 700;
+      font-size: 1.02rem;
+    }
+
+    .member .stats {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-top: 2px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge.ok { background: #d1fae5; color: var(--ok); }
+    .badge.wait { background: #ffedd5; color: var(--warn); }
+
+    .balance {
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: 1.1rem;
+      text-align: right;
+    }
+
+    .actions {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 12px;
+      padding: 11px 12px;
+      color: var(--ink);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 520px) {
+      .row { grid-template-columns: 1fr; }
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    button.primary,
+    button.ghost,
+    button.danger {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-weight: 700;
+      transition: transform 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    button.primary:hover { background: var(--accent-2); }
+    button.ghost {
+      background: var(--accent-soft);
+      color: var(--accent-2);
+    }
+    button.ghost:hover { filter: brightness(0.97); }
+    button.danger {
+      background: #fee4e2;
+      color: var(--danger);
+    }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .tiny {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 0;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .history {
+      margin-top: 18px;
+    }
+
+    .tx {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 4px 12px;
+      padding: 10px 0;
+      border-top: 1px dashed var(--line);
+      font-size: 0.92rem;
+    }
+
+    .tx:first-of-type { border-top: 0; }
+    .tx .amt { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .tx .amt.in { color: var(--ok); }
+    .tx .amt.out { color: var(--danger); }
+    .tx .when { color: var(--muted); font-size: 0.82rem; }
+
+    .msg {
+      margin: 0 0 16px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #ecfdf5;
+      color: var(--ok);
+      font-size: 0.92rem;
+      display: none;
+    }
+    .msg.show { display: block; }
+    .msg.err { background: #fef3f2; color: var(--danger); }
+
+    .empty {
+      color: var(--muted);
+      padding: 8px 0 4px;
+      font-size: 0.95rem;
+    }
+
+    footer.note {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    footer.note a { color: var(--accent-2); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="brand-row">
+        <div>
+          <p class="eyebrow">Khoi GF · Quản lý quỹ</p>
+          <h1 id="fund-name">Quỹ nhóm</h1>
+          <p class="sub">Theo dõi số dư, đóng tháng, chi tiêu chung cho nhóm 5–10 người.</p>
+        </div>
+        <div class="total-block">
+          <p class="label">Quỹ hiện tại</p>
+          <p class="amount" id="fund-total">0₫</p>
+          <p class="meta" id="fund-meta">Đang tải…</p>
+        </div>
+      </div>
+    </header>
+
+    <div id="toast" class="msg" role="status"></div>
+
+    <div class="grid">
+      <section class="panel" style="animation-delay:0.1s">
+        <h2>Thành viên · tháng này</h2>
+        <p class="hint" id="month-hint">Tiến độ đóng quỹ theo tháng hiện tại.</p>
+        <div class="members" id="members"></div>
+        <div class="btn-row" style="margin-top:14px">
+          <input id="new-member" placeholder="Tên thành viên mới" style="flex:1;min-width:160px;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:#fff">
+          <button class="primary" id="btn-add-member" type="button">Thêm</button>
+        </div>
+      </section>
+
+      <div style="display:grid;gap:18px">
+        <section class="panel actions" style="animation-delay:0.16s">
+          <h2>Ghi tiền</h2>
+          <p class="hint">Cộng quỹ cá nhân, chi chung hoặc rút/hoàn.</p>
+
+          <div class="field">
+            <label for="tx-type">Loại</label>
+            <select id="tx-type">
+              <option value="contribute">Đóng quỹ (cộng)</option>
+              <option value="expense">Chi từ quỹ</option>
+              <option value="withdraw">Rút / hoàn cá nhân</option>
+            </select>
+          </div>
+          <div class="field" id="member-field">
+            <label for="tx-member">Thành viên</label>
+            <select id="tx-member"></select>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="tx-amount">Số tiền</label>
+              <input id="tx-amount" inputmode="decimal" placeholder="100000 hoặc 100k">
+            </div>
+            <div class="field">
+              <label for="tx-note">Ghi chú</label>
+              <input id="tx-note" placeholder="Tuỳ chọn">
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="primary" id="btn-tx" type="button">Lưu giao dịch</button>
+          </div>
+        </section>
+
+        <section class="panel actions" style="animation-delay:0.22s">
+          <h2>Cài đặt quỹ</h2>
+          <p class="hint">Mức đóng tháng và hạn đóng.</p>
+          <div class="field">
+            <label for="set-name">Tên quỹ</label>
+            <input id="set-name" maxlength="60">
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="set-amount">Mức đóng / tháng</label>
+              <input id="set-amount" inputmode="numeric" placeholder="100000">
+            </div>
+            <div class="field">
+              <label for="set-due">Hạn (ngày 1–28)</label>
+              <input id="set-due" type="number" min="1" max="28">
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="ghost" id="btn-settings" type="button">Lưu cài đặt</button>
+            <button class="ghost" id="btn-refresh" type="button">Tải lại</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="panel history" style="margin-top:18px;animation-delay:0.28s">
+      <h2>Lịch sử gần đây</h2>
+      <p class="hint">20 giao dịch mới nhất.</p>
+      <div id="history"></div>
+    </section>
+
+    <footer class="note">
+      Dữ liệu đồng bộ qua server (Render) + GitHub.
+      Telegram: <code>/quy</code>, <code>/dong Tên 100k</code>, <code>/lichquy 5 09:00</code>, <code>/trogiupquy</code>.
+      Trang này: <a href="./">/quy/</a>
+    </footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let apiBase = "";
+    let state = null;
+
+    function formatVnd(n) {
+      return `${Math.round(Number(n) || 0).toLocaleString("vi-VN")}₫`;
+    }
+
+    function parseAmount(raw) {
+      let s = String(raw || "").trim().toLowerCase().replace(/[₫đ\s]/g, "").replace(/,/g, ".");
+      if (!s) return null;
+      let mult = 1;
+      if (/k$|nghìn$|nghin$/.test(s)) { mult = 1000; s = s.replace(/k$|nghìn$|nghin$/, ""); }
+      else if (/tr$|triệu$|trieu$|m$/.test(s)) { mult = 1e6; s = s.replace(/tr$|triệu$|trieu$|m$/, ""); }
+      s = s.replace(/\.(?=\d{3}(\D|$))/g, "");
+      const n = Number(s);
+      if (!Number.isFinite(n) || n <= 0) return null;
+      return Math.round(n * mult);
+    }
+
+    function toast(text, err = false) {
+      const el = $("toast");
+      el.textContent = text;
+      el.className = "msg show" + (err ? " err" : "");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => { el.className = "msg"; }, 3200);
+    }
+
+    async function resolveApi() {
+      try {
+        const cfg = await fetch("./config.json?t=" + Date.now(), { cache: "no-store" }).then((r) => r.json());
+        if (cfg?.apiUrl) {
+          apiBase = String(cfg.apiUrl).replace(/\/$/, "");
+          return;
+        }
+      } catch { /* ignore */ }
+      if (location.hostname.endsWith("github.io")) {
+        apiBase = "";
+      } else {
+        apiBase = `${location.origin}/api/quy`;
+      }
+    }
+
+    async function api(path = "", opts = {}) {
+      if (!apiBase) throw new Error("Chưa cấu hình API (quy/config.json). Deploy server rồi đợi gắn apiUrl.");
+      const url = path ? `${apiBase}${path}` : apiBase;
+      const res = await fetch(url, {
+        cache: "no-store",
+        headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
+        ...opts
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok === false) throw new Error(data.error || `Lỗi ${res.status}`);
+      return data;
+    }
+
+    function activeMembers(fund) {
+      return (fund.members || []).filter((m) => m.active !== false);
+    }
+
+    function typeLabel(t) {
+      return ({
+        contribute: "Đóng quỹ",
+        expense: "Chi quỹ",
+        withdraw: "Rút/hoàn",
+        adjust_in: "Điều chỉnh +",
+        adjust_out: "Điều chỉnh −"
+      })[t] || t;
+    }
+
+    function render() {
+      if (!state?.fund) return;
+      const { fund, total, month, monthStatus } = state;
+      $("fund-name").textContent = fund.name || "Quỹ nhóm";
+      $("fund-total").textContent = formatVnd(total);
+      const due = fund.settings.monthlyAmount;
+      const paidN = monthStatus.filter((s) => s.done).length;
+      $("fund-meta").textContent = `Tháng ${month} · ${paidN}/${monthStatus.length} đã đóng · mức ${formatVnd(due)} · hạn ngày ${fund.settings.dueDay}`;
+      $("month-hint").textContent = `Tiến độ đóng quỹ tháng ${month} (mức ${formatVnd(due)}/người).`;
+
+      $("set-name").value = fund.name || "";
+      $("set-amount").value = fund.settings.monthlyAmount || "";
+      $("set-due").value = fund.settings.dueDay || 5;
+
+      const membersEl = $("members");
+      const members = activeMembers(fund);
+      if (!members.length) {
+        membersEl.innerHTML = `<p class="empty">Chưa có thành viên. Thêm tên bên dưới hoặc dùng /them trên Telegram.</p>`;
+      } else {
+        membersEl.innerHTML = monthStatus.map((s) => `
+          <div class="member">
+            <div>
+              <div class="name">${escapeHtml(s.name)}</div>
+              <div class="stats">Tháng này ${formatVnd(s.paid)} / ${formatVnd(s.due)}${s.remaining ? ` · còn ${formatVnd(s.remaining)}` : ""}</div>
+              <button class="tiny" type="button" data-remove="${escapeHtml(s.id)}">Ẩn thành viên</button>
+            </div>
+            <div style="text-align:right">
+              <div class="balance">${formatVnd(s.balance)}</div>
+              <div style="margin-top:6px">
+                <span class="badge ${s.done ? "ok" : "wait"}">${s.done ? "Đủ tháng" : "Chưa đủ"}</span>
+              </div>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      const sel = $("tx-member");
+      const prev = sel.value;
+      sel.innerHTML = members.map((m) => `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}</option>`).join("");
+      if (prev && members.some((m) => m.id === prev)) sel.value = prev;
+
+      const txs = [...(fund.transactions || [])].reverse().slice(0, 20);
+      const hist = $("history");
+      if (!txs.length) {
+        hist.innerHTML = `<p class="empty">Chưa có giao dịch.</p>`;
+      } else {
+        const nameOf = Object.fromEntries(fund.members.map((m) => [m.id, m.name]));
+        hist.innerHTML = txs.map((t) => {
+          const inbound = t.type === "contribute" || t.type === "adjust_in";
+          const who = t.memberId ? nameOf[t.memberId] || "?" : "Quỹ chung";
+          const when = new Date(t.at).toLocaleString("vi-VN", { hour12: false });
+          return `
+            <div class="tx">
+              <div>
+                <strong>${typeLabel(t.type)}</strong> · ${escapeHtml(who)}${t.note ? ` — ${escapeHtml(t.note)}` : ""}
+                <div class="when">${escapeHtml(when)}${t.month ? ` · ${escapeHtml(t.month)}` : ""}</div>
+              </div>
+              <div class="amt ${inbound ? "in" : "out"}">${inbound ? "+" : "−"}${formatVnd(t.amount)}</div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      syncMemberField();
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function syncMemberField() {
+      const type = $("tx-type").value;
+      $("member-field").style.display = type === "expense" ? "none" : "grid";
+    }
+
+    async function refresh() {
+      state = await api();
+      render();
+    }
+
+    $("tx-type").addEventListener("change", syncMemberField);
+
+    $("btn-refresh").addEventListener("click", async () => {
+      try {
+        await refresh();
+        toast("Đã tải lại.");
+      } catch (e) {
+        toast(e.message, true);
+      }
+    });
+
+    $("btn-add-member").addEventListener("click", async () => {
+      const name = $("new-member").value.trim();
+      if (!name) return toast("Nhập tên thành viên.", true);
+      try {
+        state = await api("/members", { method: "POST", body: JSON.stringify({ name, by: "web" }) });
+        $("new-member").value = "";
+        render();
+        toast(`Đã thêm ${name}.`);
+      } catch (e) {
+        toast(e.message, true);
+      }
+    });
+
+    $("members").addEventListener("click", async (ev) => {
+      const btn = ev.target.closest("[data-remove]");
+      if (!btn) return;
+      const id = btn.getAttribute("data-remove");
+      if (!confirm("Ẩn thành viên này?")) return;
+      try {
+        state = await api(`/members/${encodeURIComponent(id)}`, { method: "DELETE" });
+        render();
+        toast("Đã ẩn thành viên.");
+      } catch (e) {
+        toast(e.message, true);
+      }
+    });
+
+    $("btn-tx").addEventListener("click", async () => {
+      const type = $("tx-type").value;
+      const amount = parseAmount($("tx-amount").value);
+      if (!amount) return toast("Số tiền không hợp lệ.", true);
+      const body = {
+        type,
+        amount,
+        note: $("tx-note").value.trim(),
+        by: "web",
+        memberId: type === "expense" ? null : $("tx-member").value || null
+      };
+      try {
+        state = await api("/transactions", { method: "POST", body: JSON.stringify(body) });
+        $("tx-amount").value = "";
+        $("tx-note").value = "";
+        render();
+        toast("Đã lưu giao dịch.");
+      } catch (e) {
+        toast(e.message, true);
+      }
+    });
+
+    $("btn-settings").addEventListener("click", async () => {
+      const monthlyAmount = parseAmount($("set-amount").value) || Number($("set-amount").value);
+      const dueDay = Number($("set-due").value);
+      const name = $("set-name").value.trim();
+      try {
+        state = await api("/settings", {
+          method: "PATCH",
+          body: JSON.stringify({ monthlyAmount, dueDay, name })
+        });
+        render();
+        toast("Đã lưu cài đặt.");
+      } catch (e) {
+        toast(e.message, true);
+      }
+    });
+
+    (async () => {
+      try {
+        await resolveApi();
+        await refresh();
+      } catch (e) {
+        $("fund-meta").textContent = e.message;
+        toast(e.message, true);
+      }
+    })();
+  </script>
+</body>
+</html>

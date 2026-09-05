@@ -125,6 +125,8 @@ Sau khi server đã thức, process tự ping `/health` mỗi 8 phút để đ�
 | `/lich off` | Tắt lịch |
 | `/id` | Xem chat id |
 
+**Quỹ nhóm** (cùng server): trang [`/quy/`](https://khoigf.github.io/quy/) — xem `quy/HUONG-DAN.md`. Lệnh Telegram: `/trogiupquy` (hoặc bot riêng với `QUY_BOT_TOKEN`).
+
 ---
 
 ## F. Chạy thử trên máy mình (không bắt buộc)

@@ -7,6 +7,7 @@ ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 ENV TZ=Asia/Ho_Chi_Minh
 
 COPY vecom /app/vecom
+COPY quy /app/quy
 
 WORKDIR /app/vecom/bot
 RUN npm install --omit=dev --ignore-scripts
