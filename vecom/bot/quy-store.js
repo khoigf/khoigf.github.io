@@ -395,10 +395,14 @@ export async function addMember(name, by = null) {
 
 export async function removeMember(query) {
   const fund = await loadFund();
-  const m = findMember(fund, query);
+  const q = String(query || "").trim();
+  if (!q) throw new Error("Thiếu tên hoặc id thành viên");
+  let m =
+    fund.members.find((x) => x.id === q && x.active !== false) ||
+    findMember(fund, q);
   if (!m) throw new Error("Không tìm thấy thành viên");
   m.active = false;
-  await saveFund(fund, `chore(quy): ẩn ${m.name}`);
+  await saveFund(fund, `chore(quy): xóa ${m.name}`);
   return getFund();
 }
 

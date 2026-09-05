@@ -21,7 +21,7 @@ Chạy chung server Docker với vé cơm (`vecom/bot`).
 | Đóng thêm cả nhóm | Có | `/dongthem 50k` (trừ mỗi người + vào quỹ) |
 | Chi từ quỹ | Có | `/chi 50k ăn tối` |
 | Rút/hoàn cá nhân | Có | `/rut An 50k` |
-| Thêm / ẩn thành viên | Có | `/them An`, `/xoa An` |
+| Thêm / xóa thành viên | Có | `/them An`, `/xoa An` |
 | Mức đóng tháng | Có | `/muc 100000` |
 | Hạn đóng (ngày) | Có | `/han 5` |
 | Lịch nhắc tự động | — | `/lichquy 5 09:00` |

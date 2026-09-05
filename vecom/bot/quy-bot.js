@@ -45,7 +45,7 @@ const HELP = [
   "/chi 50k ghi chú — chi từ quỹ",
   "/rut Tên 50k — rút/hoàn cho cá nhân",
   "/them Tên — thêm thành viên",
-  "/xoa Tên — ẩn thành viên",
+  "/xoa Tên — xóa thành viên khỏi danh sách",
   "/muc 100000 — mức đóng/tháng",
   "/han 5 — hạn đóng (ngày trong tháng)",
   "/lichquy — xem lịch nhắc",
@@ -217,9 +217,13 @@ export function registerQuyCommands(bot, { mergeHelp = false } = {}) {
     const name = String(ctx.message.text || "")
       .replace(/^\/xoa(?:@\w+)?/i, "")
       .trim();
+    if (!name) {
+      await ctx.reply("Cú pháp: /xoa Tên");
+      return;
+    }
     try {
       await removeMember(name);
-      await ctx.reply(`Đã ẩn thành viên “${name}”.`);
+      await ctx.reply(`Đã xóa thành viên “${name}” khỏi danh sách.`);
     } catch (err) {
       await ctx.reply(err.message || "Không xóa được.");
     }

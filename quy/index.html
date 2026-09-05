@@ -195,6 +195,27 @@
       margin-top: 2px;
     }
 
+    .member-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    button.danger-sm {
+      border: 0;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      background: #fee4e2;
+      color: var(--danger);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    button.danger-sm:hover { filter: brightness(0.97); }
+    button.danger-sm:active { transform: translateY(1px); }
+
     .badge {
       display: inline-flex;
       align-items: center;
@@ -373,6 +394,12 @@
         <div class="btn-row" style="margin-top:14px">
           <input id="new-member" placeholder="Tên thành viên mới" style="flex:1;min-width:160px;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:#fff">
           <button class="primary" id="btn-add-member" type="button">Thêm</button>
+        </div>
+        <div class="btn-row" style="margin-top:10px">
+          <select id="remove-member" style="flex:1;min-width:160px;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:#fff">
+            <option value="">Chọn người để xóa…</option>
+          </select>
+          <button class="danger" id="btn-remove-member" type="button">Xóa thành viên</button>
         </div>
       </section>
 
@@ -558,13 +585,15 @@
             <div>
               <div class="name">${escapeHtml(s.name)}</div>
               <div class="stats">Tháng này ${formatVnd(s.paid)} / ${formatVnd(s.due)}${s.remaining ? ` · còn ${formatVnd(s.remaining)}` : ""}</div>
-              <button class="tiny" type="button" data-remove="${escapeHtml(s.id)}">Ẩn thành viên</button>
             </div>
-            <div style="text-align:right">
-              <div class="balance" style="${s.balance < 0 ? "color:var(--danger)" : s.balance > 0 ? "color:var(--ok)" : ""}">${formatVnd(s.balance)}</div>
-              <div style="margin-top:6px">
-                <span class="badge ${s.done ? "ok" : "wait"}">${s.done ? "Đủ tháng" : "Chưa đủ"}</span>
+            <div class="member-actions">
+              <div style="text-align:right">
+                <div class="balance" style="${s.balance < 0 ? "color:var(--danger)" : s.balance > 0 ? "color:var(--ok)" : ""}">${formatVnd(s.balance)}</div>
+                <div style="margin-top:6px">
+                  <span class="badge ${s.done ? "ok" : "wait"}">${s.done ? "Đủ tháng" : "Chưa đủ"}</span>
+                </div>
               </div>
+              <button class="danger-sm" type="button" data-remove="${escapeHtml(s.id)}" title="Xóa ${escapeHtml(s.name)}">Xóa</button>
             </div>
           </div>
         `).join("");
@@ -574,6 +603,13 @@
       const prev = sel.value;
       sel.innerHTML = members.map((m) => `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}</option>`).join("");
       if (prev && members.some((m) => m.id === prev)) sel.value = prev;
+
+      const removeSel = $("remove-member");
+      const prevRemove = removeSel.value;
+      removeSel.innerHTML =
+        `<option value="">Chọn người để xóa…</option>` +
+        members.map((m) => `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}</option>`).join("");
+      if (prevRemove && members.some((m) => m.id === prevRemove)) removeSel.value = prevRemove;
 
       const txs = [...(fund.transactions || [])].reverse().slice(0, 20);
       const hist = $("history");
@@ -648,18 +684,31 @@
       }
     });
 
-    $("members").addEventListener("click", async (ev) => {
-      const btn = ev.target.closest("[data-remove]");
-      if (!btn) return;
-      const id = btn.getAttribute("data-remove");
-      if (!confirm("Ẩn thành viên này?")) return;
+    async function removeMemberById(id) {
+      if (!id) return toast("Chọn thành viên cần xóa.", true);
+      const m = activeMembers(state.fund).find((x) => x.id === id);
+      const label = m?.name || id;
+      if (!confirm(`Xóa “${label}” khỏi danh sách quỹ?\n(Lịch sử giao dịch vẫn giữ)`)) return;
       try {
-        state = await api(`/members/${encodeURIComponent(id)}`, { method: "DELETE" });
+        state = await api("/members/remove", {
+          method: "POST",
+          body: JSON.stringify({ id })
+        });
         render();
-        toast("Đã ẩn thành viên.");
+        toast(`Đã xóa ${label}.`);
       } catch (e) {
         toast(e.message, true);
       }
+    }
+
+    $("members").addEventListener("click", async (ev) => {
+      const btn = ev.target.closest("[data-remove]");
+      if (!btn) return;
+      await removeMemberById(btn.getAttribute("data-remove"));
+    });
+
+    $("btn-remove-member").addEventListener("click", async () => {
+      await removeMemberById($("remove-member").value);
     });
 
     $("btn-tx").addEventListener("click", async () => {

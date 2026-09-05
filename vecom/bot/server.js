@@ -145,6 +145,15 @@ app.delete("/api/quy/members/:id", async (req, res) => {
   }
 });
 
+app.post("/api/quy/members/remove", async (req, res) => {
+  try {
+    const fund = await removeMember(req.body?.id || req.body?.name);
+    res.json(fundPayload(fund));
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message || "Xóa thành viên thất bại" });
+  }
+});
+
 app.post("/api/quy/transactions", async (req, res) => {
   try {
     const body = req.body || {};
