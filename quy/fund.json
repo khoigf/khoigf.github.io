@@ -27,6 +27,12 @@
       "name": "Bảo",
       "telegramId": null,
       "active": true
+    },
+    {
+      "id": "m_mto3ehcc_37z2qw",
+      "name": "KỳKỳ",
+      "telegramId": null,
+      "active": true
     }
   ],
   "transactions": [
@@ -169,7 +175,17 @@
       "month": null,
       "at": "2026-09-05T07:39:30.048Z",
       "by": "web"
+    },
+    {
+      "id": "tx_mto3ehcc_asrwde",
+      "type": "charge",
+      "memberId": "m_mto3ehcc_37z2qw",
+      "amount": 100000,
+      "note": "Công nợ tháng 2026-09",
+      "month": "2026-09",
+      "at": "2026-09-05T08:00:00.588Z",
+      "by": "web"
     }
   ],
-  "updatedAt": "2026-09-05T07:39:30.048Z"
+  "updatedAt": "2026-09-05T08:00:00.588Z"
 }
