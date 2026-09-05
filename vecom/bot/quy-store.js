@@ -9,9 +9,18 @@ const LOCAL_FILE = join(DATA_DIR, "fund.json");
 const SEED_FILE = join(__dirname, "..", "..", "quy", "fund.json");
 const GH_PATH = process.env.QUY_GITHUB_PATH || "quy/fund.json";
 const CONFIG_PATH = "quy/config.json";
+/** Gom N lệnh rồi mới ghi GitHub (mặc định 8) */
+const FLUSH_OPS = Math.max(1, Number(process.env.QUY_FLUSH_OPS) || 8);
+/** Hoặc sau N ms không có thay đổi mới (mặc định 3 phút) */
+const FLUSH_MS = Math.max(15_000, Number(process.env.QUY_FLUSH_MS) || 3 * 60_000);
 
 let cache = null;
 let saveChain = Promise.resolve();
+let flushChain = Promise.resolve();
+let dirty = false;
+let pendingOps = 0;
+let flushTimer = null;
+let lastCommitMessage = "chore: cập nhật quỹ nhóm";
 
 function uid(prefix = "id") {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
@@ -116,7 +125,7 @@ export function getFund() {
 }
 
 export async function loadFund(force = false) {
-  if (cache && !force) return cache;
+  if (cache && (!force || dirty)) return cache;
   try {
     const remote = await readGithubJson(GH_PATH);
     if (remote) {
@@ -132,16 +141,60 @@ export async function loadFund(force = false) {
   return cache;
 }
 
-async function persist(fund, message = "chore: cập nhật quỹ nhóm") {
-  fund.updatedAt = new Date().toISOString();
-  cache = fund;
-  writeLocal(fund);
-  try {
-    await writeGithubJson(GH_PATH, fund, message);
-  } catch (err) {
-    console.error("Không lưu quỹ lên GitHub:", err.message);
+function clearFlushTimer() {
+  if (flushTimer) {
+    clearTimeout(flushTimer);
+    flushTimer = null;
   }
-  return fund;
+}
+
+function armFlushTimer() {
+  if (flushTimer) return;
+  flushTimer = setTimeout(() => {
+    flushTimer = null;
+    flushFundToGithub().catch((err) => console.error("Flush quỹ lỗi:", err.message));
+  }, FLUSH_MS);
+}
+
+/**
+ * Ghi GitHub ngay (hoặc khi đủ N lệnh / hết thời gian chờ).
+ * RAM + đĩa local luôn cập nhật tức thì qua saveFund.
+ */
+export function flushFundToGithub() {
+  const run = flushChain.then(async () => {
+    if (!dirty || !cache) return cache;
+    clearFlushTimer();
+    const ops = Math.max(1, pendingOps);
+    const snapshot = cache;
+    const message =
+      ops > 1 ? `chore(quy): đồng bộ ${ops} thay đổi` : lastCommitMessage;
+    pendingOps = 0;
+    dirty = false;
+    try {
+      await writeGithubJson(GH_PATH, snapshot, message);
+      console.log(`Đã ghi quỹ lên GitHub (${ops} thay đổi).`);
+    } catch (err) {
+      dirty = true;
+      pendingOps = Math.max(pendingOps, ops);
+      armFlushTimer();
+      console.error("Không lưu quỹ lên GitHub:", err.message);
+    }
+    return snapshot;
+  });
+  flushChain = run.then(
+    () => {},
+    () => {}
+  );
+  return run;
+}
+
+export function fundFlushStatus() {
+  return {
+    dirty,
+    pendingOps,
+    flushOps: FLUSH_OPS,
+    flushMs: FLUSH_MS
+  };
 }
 
 function enqueueSave(task) {
@@ -153,8 +206,23 @@ function enqueueSave(task) {
   return run;
 }
 
+/** Cập nhật RAM + file local ngay; GitHub gom theo FLUSH_OPS / FLUSH_MS */
 export function saveFund(next, message) {
-  return enqueueSave(() => persist(normalize(next), message));
+  return enqueueSave(async () => {
+    const fund = normalize(next);
+    fund.updatedAt = new Date().toISOString();
+    cache = fund;
+    writeLocal(fund);
+    dirty = true;
+    pendingOps += 1;
+    if (message) lastCommitMessage = message;
+    if (pendingOps >= FLUSH_OPS) {
+      await flushFundToGithub();
+    } else {
+      armFlushTimer();
+    }
+    return fund;
+  });
 }
 
 export function memberBalances(fund) {

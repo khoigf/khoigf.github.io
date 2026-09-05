@@ -4,7 +4,7 @@ Quản lý quỹ chung cho nhóm ~5–10 người:
 
 - Trang: `https://khoigf.github.io/quy/` (hoặc `https://<server>/quy/`)
 - Bot Telegram: lệnh `/quy`, `/dong`, `/chi`, `/lichquy`, …
-- Dữ liệu lưu `quy/fund.json` trên GitHub (không mất khi Render restart)
+- Dữ liệu: RAM + file local trên server ngay; GitHub `quy/fund.json` gom theo batch (mặc định **8 lệnh** hoặc **3 phút**, rồi ghi 1 commit). Tắt server sẽ flush còn lại.
 
 Chạy chung server Docker với vé cơm (`vecom/bot`).
 

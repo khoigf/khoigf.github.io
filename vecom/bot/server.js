@@ -19,7 +19,9 @@ import {
   monthStatus,
   monthKey,
   findMember,
-  parseAmount
+  parseAmount,
+  flushFundToGithub,
+  fundFlushStatus
 } from "./quy-store.js";
 import { quyBot, startQuyBot, stopQuyBot } from "./quy-bot.js";
 import { syncQuyConfig } from "./quy-store.js";
@@ -100,9 +102,18 @@ function fundPayload(fund) {
 app.get("/api/quy", async (_req, res) => {
   try {
     const fund = getFund() || (await loadFund());
-    res.json(fundPayload(fund));
+    res.json({ ...fundPayload(fund), flush: fundFlushStatus() });
   } catch (err) {
     res.status(503).json({ ok: false, error: err.message || "Chưa tải được quỹ" });
+  }
+});
+
+app.post("/api/quy/flush", async (_req, res) => {
+  try {
+    const fund = await flushFundToGithub();
+    res.json({ ...fundPayload(fund || (await loadFund())), flush: fundFlushStatus() });
+  } catch (err) {
+    res.status(502).json({ ok: false, error: err.message || "Flush GitHub thất bại" });
   }
 });
 
@@ -220,6 +231,11 @@ server.listen(PORT, () => {
 
 async function shutdown(signal) {
   console.log(signal);
+  try {
+    await flushFundToGithub();
+  } catch (err) {
+    console.error("Flush quỹ khi tắt:", err.message);
+  }
   try {
     await stopQuyBot();
   } catch {
