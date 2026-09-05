@@ -29,6 +29,37 @@
       "active": true
     }
   ],
-  "transactions": [],
-  "updatedAt": "2026-09-05T06:22:49.798Z"
+  "transactions": [
+    {
+      "id": "tx_mto05o2b_6r8aas",
+      "type": "contribute",
+      "memberId": "m_mtnzxi9y_gd4yrr",
+      "amount": 100000,
+      "note": "",
+      "month": "2026-09",
+      "at": "2026-09-05T06:29:10.548Z",
+      "by": "web"
+    },
+    {
+      "id": "tx_mto086am_bq1m4j",
+      "type": "contribute",
+      "memberId": "m_mtnzxeyz_66soqq",
+      "amount": 100000,
+      "note": "",
+      "month": "2026-09",
+      "at": "2026-09-05T06:31:07.487Z",
+      "by": "web"
+    },
+    {
+      "id": "tx_mto08aag_tr6dwp",
+      "type": "contribute",
+      "memberId": "m_mtnzoxhf_30p3w0",
+      "amount": 100000,
+      "note": "",
+      "month": "2026-09",
+      "at": "2026-09-05T06:31:12.664Z",
+      "by": "web"
+    }
+  ],
+  "updatedAt": "2026-09-05T06:31:12.664Z"
 }
