@@ -39,6 +39,12 @@
       "name": "Kỳ",
       "telegramId": null,
       "active": true
+    },
+    {
+      "id": "m_mtydsnir_lawd16",
+      "name": "bot",
+      "telegramId": null,
+      "active": false
     }
   ],
   "transactions": [
@@ -261,7 +267,27 @@
       "month": null,
       "at": "2026-09-12T12:45:32.515Z",
       "by": "web"
+    },
+    {
+      "id": "tx_mtydsnir_fh2l2i",
+      "type": "charge",
+      "memberId": "m_mtydsnir_lawd16",
+      "amount": 100000,
+      "note": "Công nợ tháng 2026-09",
+      "month": "2026-09",
+      "at": "2026-09-12T12:48:39.699Z",
+      "by": "web"
+    },
+    {
+      "id": "tx_mtydsw2x_gtko3h",
+      "type": "contribute",
+      "memberId": "m_mtydsnir_lawd16",
+      "amount": 18000,
+      "note": "",
+      "month": "2026-09",
+      "at": "2026-09-12T12:48:50.793Z",
+      "by": "web"
     }
   ],
-  "updatedAt": "2026-09-12T12:45:32.515Z"
+  "updatedAt": "2026-09-12T12:48:54.258Z"
 }
