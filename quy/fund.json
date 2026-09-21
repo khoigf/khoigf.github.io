@@ -287,7 +287,37 @@
       "month": "2026-09",
       "at": "2026-09-12T12:48:50.793Z",
       "by": "web"
+    },
+    {
+      "id": "tx_mubekdq5_n902th",
+      "type": "contribute",
+      "memberId": "m_mto3liat_rum6ie",
+      "amount": 418000,
+      "note": "Telegram",
+      "month": "2026-09",
+      "at": "2026-09-21T15:31:13.662Z",
+      "by": "khoi_TH"
+    },
+    {
+      "id": "tx_mubel7qv_ekfhdf",
+      "type": "withdraw",
+      "memberId": "m_mtnzxeyz_66soqq",
+      "amount": 18000,
+      "note": "Rút/hoàn",
+      "month": null,
+      "at": "2026-09-21T15:31:52.567Z",
+      "by": "khoi_TH"
+    },
+    {
+      "id": "tx_mubelq3c_4arj72",
+      "type": "expense",
+      "memberId": null,
+      "amount": 400000,
+      "note": "mua đồ",
+      "month": null,
+      "at": "2026-09-21T15:32:16.344Z",
+      "by": "khoi_TH"
     }
   ],
-  "updatedAt": "2026-09-12T12:48:54.258Z"
+  "updatedAt": "2026-09-21T15:32:16.345Z"
 }
