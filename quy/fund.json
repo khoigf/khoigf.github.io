@@ -417,7 +417,37 @@
       "month": "2026-10",
       "at": "2026-10-02T13:04:40.281Z",
       "by": "system"
+    },
+    {
+      "id": "tx_mutvi9ot_185qps",
+      "type": "contribute",
+      "memberId": "m_mtnzoxhf_30p3w0",
+      "amount": 92000,
+      "note": "tiềntiền rau/gia vị",
+      "month": "2026-10",
+      "at": "2026-10-04T13:45:19.757Z",
+      "by": "web"
+    },
+    {
+      "id": "tx_mutvioes_8raq1p",
+      "type": "contribute",
+      "memberId": "m_mtnzxeyz_66soqq",
+      "amount": 230000,
+      "note": "Tiền gạo, trứng cút",
+      "month": "2026-10",
+      "at": "2026-10-04T13:45:38.836Z",
+      "by": "web"
+    },
+    {
+      "id": "tx_mutvjj8d_i299uc",
+      "type": "expense",
+      "memberId": null,
+      "amount": 322000,
+      "note": "mua gia vị, đồ ăn",
+      "month": null,
+      "at": "2026-10-04T13:46:18.781Z",
+      "by": "web"
     }
   ],
-  "updatedAt": "2026-10-02T13:04:40.281Z"
+  "updatedAt": "2026-10-04T13:46:18.781Z"
 }
