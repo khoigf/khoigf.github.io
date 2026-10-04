@@ -245,9 +245,8 @@ export function memberBalances(fund) {
 export function fundTotal(fund) {
   let total = 0;
   for (const t of fund.transactions) {
-    if (t.type === "contribute" || t.type === "adjust_in" || t.type === "levy" || t.type === "cover") {
-      total += t.amount;
-    }
+    // `cover` không cộng: phần dư đã vào quỹ từ lúc `contribute`.
+    if (t.type === "contribute" || t.type === "adjust_in" || t.type === "levy") total += t.amount;
     if (t.type === "expense" || t.type === "withdraw" || t.type === "adjust_out") total -= t.amount;
   }
   return total;
@@ -272,8 +271,8 @@ export function monthCharged(fund, memberId, month = monthKey()) {
 
 /**
  * Mỗi tháng gắn công nợ = mức đóng.
- * Nếu số dư (trước/sau công nợ) đủ → tự lấy từ dư (charge đã trừ), ghi `cover` = đã đóng tháng,
- * cộng vào quỹ, không nhắc. `cover` không cộng lại số dư cá nhân.
+ * Nếu số dư đủ → tự lấy từ dư (charge đã trừ), ghi `cover` = đã đóng tháng, không nhắc.
+ * `cover` không đổi tổng quỹ lẫn số dư cá nhân.
  */
 export async function ensureMonthCharges(month = monthKey()) {
   if (!cache) {
@@ -309,7 +308,7 @@ export async function ensureMonthCharges(month = monthKey()) {
     changed += 1;
   }
 
-  // Đủ dư → tự trừ (qua charge) + tự ghi đã đóng (cover → quỹ +), không nhắc
+  // Đủ dư → tự trừ (qua charge) + tự ghi đã đóng, không nhắc
   for (const m of cache.members.filter((x) => x.active !== false)) {
     const charged = monthCharged(cache, m.id, month) || due;
     const paid = monthPaid(cache, m.id, month);
