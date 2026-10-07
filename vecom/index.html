@@ -626,9 +626,6 @@
     let siteConfig = { saveUrl: "", needSaveKey: false };
     const SEATS_JSON = "seats.json";
     const BACKUP_JSON = "seats.backup.json";
-    const ORDERS_API = "https://freelunch.quandaso.xyz/api/orders";
-    const DEPARTMENT_ID = 2;
-
     let LAYOUT = [];
     let allTickets = [];
     let tickets = [];
@@ -659,20 +656,6 @@
       const kind = unit >= 30000 ? 35 : 25;
       const total = (amount === 25000 || amount === 35000) ? unit * qty : (amount || unit * qty);
       return { qty, unit, kind, total };
-    }
-
-    function parseApiOrder(item) {
-      const name = String(item.name || "").trim();
-      const list = Array.isArray(item.tickets)
-        ? item.tickets.map(Number).filter((n) => n > 0)
-        : [];
-      if (list.length) {
-        const qty = list.length;
-        const kind = list.every((v) => v < 30000) ? 25 : 35;
-        const total = list.reduce((s, v) => s + v, 0);
-        return { name, qty, kind, total };
-      }
-      return { name, ...parseTicket(item.amount, 1) };
     }
 
     function todayISO() {
@@ -805,6 +788,10 @@
         return `${location.origin}/api/seats`;
       }
       return "";
+    }
+
+    function serverBase() {
+      return seatsEndpoint().replace(/\/api\/seats$/, "");
     }
 
     function hasSeatsApi() {
@@ -1214,15 +1201,13 @@
       btn.disabled = true;
       btn.textContent = "Đang tải...";
       try {
-        const url = `${ORDERS_API}?date=${encodeURIComponent(date)}&department_id=${DEPARTMENT_ID}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`API lỗi ${res.status}`);
-        const json = await res.json();
-        if (json.code !== 0 && json.code !== undefined) {
-          throw new Error(json.message || "API trả về lỗi.");
-        }
-        const rows = (json.data || []).map(parseApiOrder).filter((t) => t.name);
-        if (!rows.length) throw new Error("Ngày này không có đơn nào.");
+        const base = serverBase();
+        if (!base) throw new Error("Chưa có máy chủ — API đơn cơm cần đăng nhập nên phải lấy qua server.");
+        const res = await fetch(`${base}/api/capture-data?date=${encodeURIComponent(date)}`);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok && !data.error) throw new Error(`API lỗi ${res.status}`);
+        if (!data.ok) throw new Error(data.error || "Ngày này không có đơn nào.");
+        const rows = data.tickets || [];
         applyTicketData(rows, `API ${formatDateLabel(date)} · ${rows.length} người`, date);
         msg.style.color = "var(--accent)";
         msg.textContent = `Đã lấy ${rows.length} đơn ngày ${formatDateLabel(date)}.`;
