@@ -343,12 +343,14 @@
     }
 
     .seat.mixed .name {
-      position: absolute;
-      inset: 0;
+      position: relative;
       opacity: 1;
-      padding: 0 8px;
+      flex: 1;
+      min-width: 0;
+      padding: 0 28px;
       z-index: 1;
       color: inherit;
+      text-align: center;
       text-shadow: 0 1px rgba(255, 255, 255, .45);
     }
 
@@ -372,8 +374,8 @@
     }
 
     .mixed-tickets strong { font-size: 15px; }
-    .mixed-tickets .q25 { color: #4a044e; }
-    .mixed-tickets .q35 { justify-content: center; color: #fff; }
+    .mixed-tickets .q25 { justify-content: flex-start; color: #4a044e; }
+    .mixed-tickets .q35 { justify-content: flex-end; color: #fff; }
     .seat.none { background: var(--gray); color: #111; }
     .seat.empty {
       background: #fff;
@@ -1138,7 +1140,7 @@
       if (mixed) {
         const breakdown = document.createElement("span");
         breakdown.className = "mixed-tickets";
-        breakdown.innerHTML = `<span class="q25">25k <strong>${t.qty25}</strong></span><span class="q35">35k <strong>${t.qty35}</strong></span>`;
+        breakdown.innerHTML = `<span class="q25"><strong>${t.qty25}</strong></span><span class="q35"><strong>${t.qty35}</strong></span>`;
         breakdown.setAttribute("aria-label", `${t.qty25} vé 25k, ${t.qty35} vé 35k`);
         el.appendChild(breakdown);
       } else if (t && t.qty > 1) {
