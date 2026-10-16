@@ -103,10 +103,19 @@ function groupOrders(orders) {
     if (!byUser.has(key)) byUser.set(key, { name, tickets: [] });
     byUser.get(key).tickets.push(Number(order.amount) || 0);
   }
-  return [...byUser.values()].map(({ name, tickets }) => {
+  return [...byUser.values()].flatMap(({ name, tickets }) => {
     const list = tickets.filter((n) => n > 0);
-    const kind = list.length && list.every((v) => v < 30000) ? 25 : 35;
-    return { name, qty: list.length || 1, kind, total: list.reduce((s, v) => s + v, 0) };
+    const byKind = new Map();
+    for (const amount of list) {
+      const kind = amount >= 30000 ? 35 : 25;
+      const group = byKind.get(kind) || { name, qty: 0, kind, total: 0 };
+      group.qty += 1;
+      group.total += amount;
+      byKind.set(kind, group);
+    }
+    // Một người có thể đặt cả vé 25k và 35k. Trả từng loại riêng để frontend
+    // đếm đúng, thay vì gộp tất cả thành 35k khi chỉ có một vé 35k.
+    return [...byKind.values()];
   });
 }
 

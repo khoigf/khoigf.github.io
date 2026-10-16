@@ -334,6 +334,30 @@
 
     .seat.t25 { background: var(--pink); color: #4a044e; }
     .seat.t35 { background: var(--blue); color: #fff; }
+    .seat.mixed {
+      background: linear-gradient(to right, var(--pink) 0 50%, var(--blue) 50% 100%);
+      color: #111;
+    }
+
+    .seat .mixed-tickets {
+      display: flex;
+      align-self: stretch;
+      flex: 0 0 auto;
+      margin: 0 -8px 0 0;
+    }
+
+    .mixed-tickets span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 26px;
+      padding: 0 5px;
+      font-weight: 800;
+      font-size: 11px;
+    }
+
+    .mixed-tickets .q25 { background: color-mix(in srgb, var(--pink) 78%, #fff); color: #4a044e; }
+    .mixed-tickets .q35 { background: color-mix(in srgb, var(--blue) 86%, #000); color: #fff; }
     .seat.none { background: var(--gray); color: #111; }
     .seat.empty {
       background: #fff;
@@ -582,6 +606,7 @@
         <div class="legend">
           <span><i style="background:var(--pink)"></i>25k</span>
           <span><i style="background:var(--blue)"></i>35k</span>
+          <span><i style="background:linear-gradient(to right,var(--pink) 0 50%,var(--blue) 50% 100%)"></i>Cả 2 loại (số vé mỗi loại)</span>
           <span><i style="background:var(--gray)"></i>Không đăng ký</span>
         </div>
       </div>
@@ -1043,8 +1068,15 @@
         if (prev) {
           prev.qty += t.qty;
           prev.total += t.total;
-          if (t.kind === 35) prev.kind = 35;
-        } else map.set(t.seatId, { ...t });
+          if (t.kind === 25) prev.qty25 += t.qty;
+          else prev.qty35 += t.qty;
+        } else {
+          map.set(t.seatId, {
+            ...t,
+            qty25: t.kind === 25 ? t.qty : 0,
+            qty35: t.kind === 35 ? t.qty : 0
+          });
+        }
       });
       return map;
     }
@@ -1066,7 +1098,8 @@
       const el = document.createElement("div");
       const named = hasName(cell);
       const t = named ? bySeat.get(cell.id) : null;
-      el.className = "seat " + (named ? (t ? (t.kind === 35 ? "t35" : "t25") : "none") : "empty");
+      const mixed = t && t.qty25 > 0 && t.qty35 > 0;
+      el.className = "seat " + (named ? (t ? (mixed ? "mixed" : (t.kind === 35 ? "t35" : "t25")) : "none") : "empty");
       const nm = document.createElement("input");
       nm.className = "name";
       nm.type = "text";
@@ -1086,14 +1119,20 @@
         commitSeatName(cell, nm.value);
       });
       el.appendChild(nm);
-      if (t && t.qty > 1) {
+      if (mixed) {
+        const breakdown = document.createElement("span");
+        breakdown.className = "mixed-tickets";
+        breakdown.innerHTML = `<span class="q25">${t.qty25}</span><span class="q35">${t.qty35}</span>`;
+        breakdown.setAttribute("aria-label", `${t.qty25} vé 25k, ${t.qty35} vé 35k`);
+        el.appendChild(breakdown);
+      } else if (t && t.qty > 1) {
         const q = document.createElement("span");
         q.className = "qty";
         q.textContent = t.qty;
         el.appendChild(q);
       }
       el.title = named
-        ? (t ? `${cell.name} · ${t.qty} vé · ${t.kind}k` : `${cell.name} · không đăng ký`)
+        ? (t ? `${cell.name} · ${t.qty25 ? `${t.qty25} vé 25k` : ""}${t.qty25 && t.qty35 ? " · " : ""}${t.qty35 ? `${t.qty35} vé 35k` : ""}` : `${cell.name} · không đăng ký`)
         : "Bấm để thêm người";
       return el;
     }
