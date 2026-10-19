@@ -152,6 +152,7 @@ curl "https://api.telegram.org/botTOKEN/deleteWebhook"
 ## Gỡ lỗi nhanh
 
 - Bot không trả lời: log Render có webhook chưa; thử `/start` ngoài nhóm rồi `/ve`.
+- Log `ETIMEDOUT` tới `api.telegram.org`: đây là mạng outbound của server bị timeout, không phải token sai (token sai trả `401`). Redeploy bản mới; webhook sẽ trả `503` để Telegram tự gửi lại update. Nếu kéo dài, kiểm tra trạng thái Telegram và đổi region/nhà cung cấp server.
 - `/ve` lỗi thiếu RAM: gói Free 512MB đôi khi không đủ Chromium — nâng instance hoặc đợi cold start xong rồi gửi lại.
 - Trang Pages không lưu: đợi `config.json` có `saveUrl`, hard refresh. Hoặc dùng thẳng URL Render.
 - Sơ đồ mất sau restart: thiếu `GITHUB_TOKEN` quyền Contents write.

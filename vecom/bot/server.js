@@ -201,23 +201,28 @@ app.patch("/api/quy/settings", async (req, res) => {
   }
 });
 
-if (bot) {
-  app.post("/telegram-webhook", (req, res) => {
-    res.sendStatus(200);
-    bot.handleUpdate(req.body).catch((err) => {
-      console.error("Telegram update:", err);
-    });
-  });
+/**
+ * Telegram retries a webhook only when it receives a non-2xx response.  Do
+ * not acknowledge an update before Telegraf has handled it: a temporary
+ * network failure while Telegraf calls getMe/sendMessage would otherwise lose
+ * that update permanently.
+ */
+function telegramWebhook(name, telegramBot) {
+  return (req, res) => {
+    telegramBot
+      .handleUpdate(req.body)
+      .then(() => res.sendStatus(200))
+      .catch((err) => {
+        const code = err?.code || err?.cause?.code || "UNKNOWN";
+        console.error(`${name} update failed (${code}); Telegram will retry:`, err.message);
+        if (!res.headersSent) res.sendStatus(503);
+      });
+  };
 }
 
-if (quyBot) {
-  app.post("/quy-telegram-webhook", (req, res) => {
-    res.sendStatus(200);
-    quyBot.handleUpdate(req.body).catch((err) => {
-      console.error("Quy Telegram update:", err);
-    });
-  });
-}
+if (bot) app.post("/telegram-webhook", telegramWebhook("Telegram", bot));
+
+if (quyBot) app.post("/quy-telegram-webhook", telegramWebhook("Quy Telegram", quyBot));
 
 app.use((req, res, next) => {
   if (req.path === "/bot" || req.path.startsWith("/bot/")) {
