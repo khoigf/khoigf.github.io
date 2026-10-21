@@ -201,21 +201,33 @@ app.patch("/api/quy/settings", async (req, res) => {
   }
 });
 
-/**
- * Telegram retries a webhook only when it receives a non-2xx response.  Do
- * not acknowledge an update before Telegraf has handled it: a temporary
- * network failure while Telegraf calls getMe/sendMessage would otherwise lose
- * that update permanently.
- */
+// Chụp sơ đồ có thể mất nhiều giây. Xác nhận update ngay để Telegram không
+// coi webhook là timeout rồi gửi lại đúng cùng một lệnh.
+const handledTelegramUpdates = new Map();
+const TELEGRAM_UPDATE_DEDUP_MS = 24 * 60 * 60 * 1000;
+
 function telegramWebhook(name, telegramBot) {
   return (req, res) => {
+    const updateId = req.body?.update_id;
+    const now = Date.now();
+
+    for (const [id, at] of handledTelegramUpdates) {
+      if (now - at > TELEGRAM_UPDATE_DEDUP_MS) handledTelegramUpdates.delete(id);
+    }
+
+    const updateKey = `${name}:${updateId}`;
+    if (Number.isInteger(updateId) && handledTelegramUpdates.has(updateKey)) {
+      res.sendStatus(200);
+      return;
+    }
+    if (Number.isInteger(updateId)) handledTelegramUpdates.set(updateKey, now);
+
+    res.sendStatus(200);
     telegramBot
       .handleUpdate(req.body)
-      .then(() => res.sendStatus(200))
       .catch((err) => {
         const code = err?.code || err?.cause?.code || "UNKNOWN";
-        console.error(`${name} update failed (${code}); Telegram will retry:`, err.message);
-        if (!res.headersSent) res.sendStatus(503);
+        console.error(`${name} update failed (${code}):`, err.message);
       });
   };
 }
