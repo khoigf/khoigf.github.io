@@ -467,7 +467,27 @@
       "month": null,
       "at": "2026-10-18T03:53:08.529Z",
       "by": "web"
+    },
+    {
+      "id": "tx_mvm4psfd_84i5dk",
+      "type": "contribute",
+      "memberId": "m_mtnzxi9y_gd4yrr",
+      "amount": 40000,
+      "note": "Telegram",
+      "month": "2026-10",
+      "at": "2026-10-24T08:20:40.106Z",
+      "by": "Man"
+    },
+    {
+      "id": "tx_mvm4qad7_atj3ct",
+      "type": "expense",
+      "memberId": null,
+      "amount": 40000,
+      "note": "kemđánhrăng",
+      "month": null,
+      "at": "2026-10-24T08:21:03.356Z",
+      "by": "Man"
     }
   ],
-  "updatedAt": "2026-10-18T03:53:08.529Z"
+  "updatedAt": "2026-10-24T08:21:03.356Z"
 }
