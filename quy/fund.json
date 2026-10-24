@@ -487,7 +487,27 @@
       "month": null,
       "at": "2026-10-24T08:21:03.356Z",
       "by": "Man"
+    },
+    {
+      "id": "tx_mvmmmo6h_wubd9h",
+      "type": "contribute",
+      "memberId": "m_mtnzoxhf_30p3w0",
+      "amount": 380000,
+      "note": "Tiền mua đồ",
+      "month": "2026-10",
+      "at": "2026-10-24T16:42:07.722Z",
+      "by": "web"
+    },
+    {
+      "id": "tx_mvmmn3va_6t2wix",
+      "type": "expense",
+      "memberId": null,
+      "amount": 380000,
+      "note": "Tiền mua đồ",
+      "month": null,
+      "at": "2026-10-24T16:42:28.054Z",
+      "by": "web"
     }
   ],
-  "updatedAt": "2026-10-24T08:21:03.356Z"
+  "updatedAt": "2026-10-24T16:42:28.054Z"
 }
