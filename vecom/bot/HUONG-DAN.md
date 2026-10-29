@@ -119,6 +119,7 @@ Sau khi server đã thức, process tự ping `/health` mỗi 8 phút để đ�
 | Lệnh | Việc |
 |---|---|
 | `/ve` | Ảnh vé hôm nay |
+| `/menu` | Ảnh thực đơn tuần này (FreeLunch) |
 | `/ve 28/08/2026` | Đúng ngày |
 | `/lich 09:00` | Tự gửi T2–T6 lúc 09:00 |
 | `/lich 09:00 *` | Mỗi ngày |

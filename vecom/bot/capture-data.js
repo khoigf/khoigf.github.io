@@ -3,6 +3,9 @@ import { getSeats, loadSeats } from "./seats-store.js";
 const FREELUNCH_BASE = (process.env.FREELUNCH_URL || "https://freelunch.quandaso.xyz").replace(/\/$/, "");
 const LOGIN_URL = `${FREELUNCH_BASE}/xadmin/login`;
 const REPORT_API = `${FREELUNCH_BASE}/xadmin/api/orders/report`;
+const DASHBOARD_URL = `${FREELUNCH_BASE}/xadmin/dashboard/index`;
+const MENU_CACHE_MS = 5 * 60_000;
+let menuCache = null;
 const DEPARTMENT_ID = Number(process.env.FREELUNCH_DEPARTMENT_ID) || 2;
 const ORDERS_CACHE_MS = 20_000;
 const ordersCache = new Map();
@@ -61,6 +64,38 @@ function ensureLogin() {
     });
   }
   return loginPromise;
+}
+
+function requestDashboard() {
+  return fetch(DASHBOARD_URL, {
+    redirect: "manual",
+    headers: { Accept: "text/html", Cookie: cookieHeader() },
+    signal: AbortSignal.timeout(12000)
+  });
+}
+
+function decodeJsString(raw) {
+  return raw.replace(/\\(u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|[^])/g, (_, esc) => {
+    if (esc[0] === "u") return String.fromCharCode(parseInt(esc.slice(1), 16));
+    if (esc[0] === "x") return String.fromCharCode(parseInt(esc.slice(1), 16));
+    const map = { n: "\n", r: "\r", t: "\t", b: "\b", f: "\f" };
+    return map[esc] ?? esc;
+  });
+}
+
+/** Dashboard nhúng window.$json.currentFoodMenuFile.uri — ảnh thực đơn tuần này. */
+export function parseFoodMenu(html) {
+  const m = String(html).match(/window\.\$json\s*=\s*JSON\.parse\('((?:\\.|[^'])*)'\)/);
+  if (!m) return null;
+  let data;
+  try {
+    data = JSON.parse(decodeJsString(m[1]));
+  } catch {
+    return null;
+  }
+  const uri = String(data?.currentFoodMenuFile?.uri || "");
+  if (!/^https?:\/\//.test(uri)) return null;
+  return { id: data.currentFoodMenuFile.id ?? null, uri };
 }
 
 function requestReport(isoDate) {
@@ -122,6 +157,21 @@ function groupOrders(orders) {
 function formatDateLabel(iso) {
   const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
   return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+}
+
+export async function fetchFoodMenu() {
+  if (menuCache && Date.now() - menuCache.at < MENU_CACHE_MS) return menuCache.menu;
+  if (!cookieJar.size) await ensureLogin();
+  let res = await requestDashboard();
+  if (needsLogin(res)) {
+    await ensureLogin();
+    res = await requestDashboard();
+  }
+  if (needsLogin(res) || !res.ok) throw new Error("Không mở được trang thực đơn FreeLunch");
+  const menu = parseFoodMenu(await res.text());
+  if (!menu) throw new Error("Dashboard chưa có ảnh thực đơn");
+  menuCache = { menu, at: Date.now() };
+  return menu;
 }
 
 export async function fetchCaptureData(isoDate) {

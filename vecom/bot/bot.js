@@ -5,7 +5,7 @@ import "./env.js";
 import { Telegraf } from "telegraf";
 import { chromium } from "playwright";
 import cron from "node-cron";
-import { fetchCaptureData } from "./capture-data.js";
+import { fetchCaptureData, fetchFoodMenu } from "./capture-data.js";
 import { readGithubJson, writeGithubJson } from "./seats-store.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -273,6 +273,7 @@ const HELP = [
   "Lệnh vé cơm:",
   "/ve — ảnh hôm nay",
   "/ve 28/06/2026 hoặc /ve-28/06/2026 — đúng ngày",
+  "/menu — ảnh thực đơn tuần này",
   "/lich — xem lịch gửi nhóm",
   "/lich 09:00 — gửi T2–T6 lúc 09:00",
   "/lich 09:00 * — gửi mỗi ngày lúc 09:00",
@@ -314,6 +315,25 @@ if (bot) {
       await sendVe(ctx.chat.id, iso, undefined, primed);
     } catch (err) {
       await ctx.reply(err.message || "Không gửi được ảnh.");
+    } finally {
+      try { await ctx.deleteMessage(wait.message_id); } catch { /* ignore */ }
+    }
+  });
+
+  bot.command("menu", async (ctx) => {
+    const wait = await ctx.reply("Đang lấy thực đơn...");
+    try {
+      const menu = await fetchFoodMenu();
+      const img = await fetch(menu.uri, { signal: AbortSignal.timeout(15000) });
+      if (!img.ok) throw new Error("Không tải được ảnh thực đơn");
+      const buf = Buffer.from(await img.arrayBuffer());
+      await bot.telegram.sendPhoto(
+        ctx.chat.id,
+        { source: buf, filename: "thuc-don.png" },
+        { caption: "Thực đơn tuần này" }
+      );
+    } catch (err) {
+      await ctx.reply(err.message || "Không lấy được thực đơn.");
     } finally {
       try { await ctx.deleteMessage(wait.message_id); } catch { /* ignore */ }
     }

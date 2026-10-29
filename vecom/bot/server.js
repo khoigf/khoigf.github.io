@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import { bot, startTelegram, stopTelegram, invalidateVeCache } from "./bot.js";
-import { fetchCaptureData } from "./capture-data.js";
+import { fetchCaptureData, fetchFoodMenu } from "./capture-data.js";
 import { getSeats, isValidLayout, loadSeats, saveSeats, syncPublicConfig } from "./seats-store.js";
 import {
   loadFund,
@@ -50,6 +50,15 @@ app.use((req, res, next) => {
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.get("/menu", async (_req, res) => {
+  try {
+    const menu = await fetchFoodMenu();
+    res.redirect(302, menu.uri);
+  } catch (err) {
+    res.status(502).type("text/plain; charset=utf-8").send(err.message || "Không lấy được thực đơn");
+  }
 });
 
 app.get("/api/capture-data", async (req, res) => {
