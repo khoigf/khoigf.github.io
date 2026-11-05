@@ -507,7 +507,87 @@
       "month": null,
       "at": "2026-10-24T16:42:28.054Z",
       "by": "web"
+    },
+    {
+      "id": "tx_mw2wehk2_17py5l",
+      "type": "charge",
+      "memberId": "m_mtnzoxhf_30p3w0",
+      "amount": 100000,
+      "note": "Công nợ tháng 2026-11",
+      "month": "2026-11",
+      "at": "2026-11-05T02:00:00.866Z",
+      "by": "system"
+    },
+    {
+      "id": "tx_mw2wehk2_eo4vpa",
+      "type": "charge",
+      "memberId": "m_mtnzxeyz_66soqq",
+      "amount": 100000,
+      "note": "Công nợ tháng 2026-11",
+      "month": "2026-11",
+      "at": "2026-11-05T02:00:00.866Z",
+      "by": "system"
+    },
+    {
+      "id": "tx_mw2wehk2_ywbab3",
+      "type": "charge",
+      "memberId": "m_mtnzxi9y_gd4yrr",
+      "amount": 100000,
+      "note": "Công nợ tháng 2026-11",
+      "month": "2026-11",
+      "at": "2026-11-05T02:00:00.866Z",
+      "by": "system"
+    },
+    {
+      "id": "tx_mw2wehk2_bim57e",
+      "type": "charge",
+      "memberId": "m_mto3liat_rum6ie",
+      "amount": 100000,
+      "note": "Công nợ tháng 2026-11",
+      "month": "2026-11",
+      "at": "2026-11-05T02:00:00.866Z",
+      "by": "system"
+    },
+    {
+      "id": "tx_mw2wehk2_37fa9o",
+      "type": "cover",
+      "memberId": "m_mtnzoxhf_30p3w0",
+      "amount": 100000,
+      "note": "Tự trừ từ số dư — đã đóng tháng 2026-11",
+      "month": "2026-11",
+      "at": "2026-11-05T02:00:00.866Z",
+      "by": "system"
+    },
+    {
+      "id": "tx_mw2wehk2_g45yaa",
+      "type": "cover",
+      "memberId": "m_mtnzxeyz_66soqq",
+      "amount": 100000,
+      "note": "Tự trừ từ số dư — đã đóng tháng 2026-11",
+      "month": "2026-11",
+      "at": "2026-11-05T02:00:00.866Z",
+      "by": "system"
+    },
+    {
+      "id": "tx_mw2wehk2_e26rpr",
+      "type": "cover",
+      "memberId": "m_mtnzxi9y_gd4yrr",
+      "amount": 100000,
+      "note": "Tự trừ từ số dư — đã đóng tháng 2026-11",
+      "month": "2026-11",
+      "at": "2026-11-05T02:00:00.866Z",
+      "by": "system"
+    },
+    {
+      "id": "tx_mw2wehk2_apglwu",
+      "type": "cover",
+      "memberId": "m_mto3liat_rum6ie",
+      "amount": 100000,
+      "note": "Tự trừ từ số dư — đã đóng tháng 2026-11",
+      "month": "2026-11",
+      "at": "2026-11-05T02:00:00.866Z",
+      "by": "system"
     }
   ],
-  "updatedAt": "2026-10-24T16:42:28.054Z"
+  "updatedAt": "2026-11-05T02:00:00.867Z"
 }
