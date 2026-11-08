@@ -587,7 +587,27 @@
       "month": "2026-11",
       "at": "2026-11-05T02:00:00.866Z",
       "by": "system"
+    },
+    {
+      "id": "tx_mw801d5n_p1vigf",
+      "type": "contribute",
+      "memberId": "m_mtnzxeyz_66soqq",
+      "amount": 200000,
+      "note": "Telegram",
+      "month": "2026-11",
+      "at": "2026-11-08T15:40:37.980Z",
+      "by": "hoangmang00"
+    },
+    {
+      "id": "tx_mw8021wp_dxkxgv",
+      "type": "expense",
+      "memberId": null,
+      "amount": 200000,
+      "note": "mua gạo",
+      "month": null,
+      "at": "2026-11-08T15:41:10.057Z",
+      "by": "hoangmang00"
     }
   ],
-  "updatedAt": "2026-11-05T02:00:00.867Z"
+  "updatedAt": "2026-11-08T15:41:10.057Z"
 }
