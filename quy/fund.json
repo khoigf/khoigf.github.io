@@ -607,7 +607,27 @@
       "month": null,
       "at": "2026-11-08T15:41:10.057Z",
       "by": "hoangmang00"
+    },
+    {
+      "id": "tx_mwbywm0z_ad15uh",
+      "type": "contribute",
+      "memberId": "m_mtnzxi9y_gd4yrr",
+      "amount": 156000,
+      "note": "Telegram",
+      "month": "2026-11",
+      "at": "2026-11-11T10:20:01.284Z",
+      "by": "Man"
+    },
+    {
+      "id": "tx_mwbywx5n_o8ucbb",
+      "type": "expense",
+      "memberId": null,
+      "amount": 156000,
+      "note": "dầu gội",
+      "month": null,
+      "at": "2026-11-11T10:20:15.707Z",
+      "by": "Man"
     }
   ],
-  "updatedAt": "2026-11-08T15:41:10.057Z"
+  "updatedAt": "2026-11-11T10:20:15.707Z"
 }
