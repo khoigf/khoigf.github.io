@@ -627,7 +627,27 @@
       "month": null,
       "at": "2026-11-11T10:20:15.707Z",
       "by": "Man"
+    },
+    {
+      "id": "tx_mwdc2v1x_5ix32h",
+      "type": "contribute",
+      "memberId": "m_mtnzxeyz_66soqq",
+      "amount": 135000,
+      "note": "",
+      "month": "2026-11",
+      "at": "2026-11-12T09:16:34.101Z",
+      "by": "web"
+    },
+    {
+      "id": "tx_mwdc40vc_euf8uc",
+      "type": "expense",
+      "memberId": null,
+      "amount": 135000,
+      "note": "mua nước để ăn",
+      "month": null,
+      "at": "2026-11-12T09:17:28.296Z",
+      "by": "web"
     }
   ],
-  "updatedAt": "2026-11-11T10:20:15.707Z"
+  "updatedAt": "2026-11-12T09:17:28.296Z"
 }
