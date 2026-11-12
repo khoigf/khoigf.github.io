@@ -410,6 +410,10 @@ export function registerQuyCommands(bot, { mergeHelp = false } = {}) {
   }
 }
 
+// Gắn lệnh ngay khi load module (giống bot.js) để webhook luôn có handler,
+// kể cả khi startQuyBot lỗi/chưa chạy xong.
+if (quyBot) registerQuyCommands(quyBot);
+
 export function quyHelpText() {
   return HELP;
 }
@@ -419,7 +423,6 @@ export async function startQuyBot(publicUrl, vecomBot = null) {
   applyRemind(await restoreRemind());
 
   if (quyBot) {
-    registerQuyCommands(quyBot);
     if (publicUrl) {
       const hook = `${publicUrl.replace(/\/$/, "")}/quy-telegram-webhook`;
       await quyBot.telegram.setWebhook(hook);

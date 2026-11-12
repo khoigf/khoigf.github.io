@@ -263,9 +263,9 @@ server.listen(PORT, () => {
   console.log(`Quỹ nhóm http://127.0.0.1:${PORT}/quy/`);
   loadSeats().catch((err) => console.error("Không tải seats.json:", err.message));
   loadFund().catch((err) => console.error("Không tải fund.json:", err.message));
-  startTelegram(publicUrl)
-    .then(() => startQuyBot(publicUrl, bot))
-    .catch((err) => console.error("Không khởi động Telegram:", err.message));
+  // Khởi động độc lập: bot vé cơm lỗi (vd. setWebhook ETIMEDOUT) không được kéo bot quỹ chết theo.
+  startTelegram(publicUrl).catch((err) => console.error("Không khởi động bot vé cơm:", err.message));
+  startQuyBot(publicUrl, bot).catch((err) => console.error("Không khởi động bot quỹ:", err.message));
   if (publicUrl) {
     syncPublicConfig(publicUrl).catch((err) => console.error("Không gắn config.json:", err.message));
     syncQuyConfig(publicUrl).catch((err) => console.error("Không gắn quy/config.json:", err.message));
