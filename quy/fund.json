@@ -647,7 +647,27 @@
       "month": null,
       "at": "2026-11-12T09:17:28.296Z",
       "by": "web"
+    },
+    {
+      "id": "tx_mwulo3jl_q4hn13",
+      "type": "contribute",
+      "memberId": "m_mto3liat_rum6ie",
+      "amount": 326000,
+      "note": "Telegram",
+      "month": "2026-11",
+      "at": "2026-11-24T11:17:06.417Z",
+      "by": "khoi_TH"
+    },
+    {
+      "id": "tx_mwulodhk_oqxbiu",
+      "type": "expense",
+      "memberId": null,
+      "amount": 326000,
+      "note": "mua đồ",
+      "month": null,
+      "at": "2026-11-24T11:17:19.304Z",
+      "by": "khoi_TH"
     }
   ],
-  "updatedAt": "2026-11-12T09:17:28.296Z"
+  "updatedAt": "2026-11-24T11:17:19.304Z"
 }
